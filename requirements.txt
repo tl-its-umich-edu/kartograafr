@@ -1,0 +1,5 @@
+python >= 2.7
+requests
+urlnorm
+#arcrest_package
+git+https://github.com/tl-its-umich-edu/ArcREST.git@umich-bugfixes#egg=arcrest&subdirectory=src
