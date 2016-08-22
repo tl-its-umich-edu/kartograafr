@@ -23,10 +23,12 @@ class RequestsPlus(util.UtilMixin, object):
     @staticmethod
     def responseCollection(response):
         """
+        Convenience method to make a ResponseCollection
+        object for a response.
 
-        :param response:
+        :param response: requests Response object, usually the first of multiple pages
         :type response: requests.models.Response
-        :return:
+        :return: ResponseCollection object containing multiple response pages
         :rtype: ResponseCollection
         """
         return ResponseCollection(response)
@@ -49,12 +51,12 @@ class RequestsPlus(util.UtilMixin, object):
 
     def _prepareURL(self, apiQueryURI):
         """
-        If the URI (actually, just a partial URL, usually the path part) doesn't begin with
+        If the URI (actually just a partial URL, usually the path part) doesn't begin with
         the base URL for the API, concatenate the two into a new URL and return it.
 
         :param apiQueryURI: URI (actually, just a partial URL, usually the path part) for an API entry point.
         :type apiQueryURI: str
-        :return:
+        :return: URL for the API query, ready for use
         :rtype: str
         """
         assert isinstance(apiQueryURI, str)
@@ -90,6 +92,16 @@ class RequestsPlus(util.UtilMixin, object):
         return response
 
     def errorString(self, response):
+        """
+        Return the HTTP status code and corresponding reason from a
+        requests Response object.  If any errors.message strings exist,
+        include them in the string.
+
+        :param response: requests Response object containing the error
+        :type response: requests.Response
+        :return: Formatted errors
+        :rtype: str
+        """
         errorString = str(response.status_code) + ' - ' + response.reason
         try:
             errorString += '\nErrors:\n\t' + ',\n\t'.join(
@@ -113,7 +125,26 @@ class RequestsPlus(util.UtilMixin, object):
         return self._sendRequest(self.methodName(), apiQueryURI, **kwargs)
 
     def getAllResponsePages(self, response):
+        """
+        Convenience method to get a ResponseCollection which includes all pages
+        of the API response.
+
+        :param response:
+        :return: ResponseCollection containing all response pages
+        :rtype: RequestsPlus.ResponseCollection
+        """
         return ResponseCollection(response, session=self.session).collectAllResponsePages()
 
     def post(self, apiQueryURI, params=None, **kwargs):
+        """
+        Pass the request method, the specified query URI, and parameters along for processing.
+
+        :param apiQueryURI: URI for the query, to be appended to the base URL
+        :type apiQueryURI: str
+        :param params: Parameters to be sent along with the request
+        :type params: mixed
+        :return: Response object
+        :rtype: requests.Response
+        """
+
         return self._sendRequest(self.methodName(), apiQueryURI, params=params, **kwargs)
