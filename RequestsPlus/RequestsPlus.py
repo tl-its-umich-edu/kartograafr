@@ -65,8 +65,8 @@ class RequestsPlus(util.UtilMixin, object):
 
         if apiQueryURI.startswith(self.apiBaseURL):
             return apiQueryURI
-        else:
-            return urlnorm.norm(self.apiBaseURL + '/' + apiQueryURI)
+
+        return urlnorm.norm(self.apiBaseURL + '/' + apiQueryURI)
 
     def _sendRequest(self, httpMethod, apiQueryURI, **kwargs):
         """
