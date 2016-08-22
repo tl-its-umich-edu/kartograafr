@@ -6,34 +6,7 @@ def getCanvasInstance():
     return CanvasAPI(config.Canvas.API_BASE_URL, authZToken=config.Canvas.API_AUTHZ_TOKEN)
 
 
-def main():
-    canvas = getCanvasInstance()
-
-    outcomeID = config.Canvas.TARGET_OUTCOME_ID
-    verifiedOutcome = canvas.getOutcomeObject(outcomeID)
-
-    assert verifiedOutcome is not None, \
-        'Outcome {} was not found'.format(outcomeID)
-
-    courseIDs = config.Canvas.COURSE_ID_SET
-    print 'possible course IDs:', courseIDs
-
-    matchingCourseIDs = getCoursesWithOutcome(canvas, courseIDs, verifiedOutcome)
-
-    print 'matching course IDs:', matchingCourseIDs
-
-    assert len(matchingCourseIDs) > 0, \
-        'No courses linked to Outcome {} were found'.format(outcomeID)
-
-    matchingCourseAssignments = getCourseAssignmentsWithOutcome(canvas, matchingCourseIDs, verifiedOutcome)
-
-    print 'matching course assignments:', [
-        (assignment.name, assignment.id)
-        for assignment
-        in matchingCourseAssignments]
-
-
-def getCoursesWithOutcome(canvas, courseIDs, outcome):
+def getCourseIDsWithOutcome(canvas, courseIDs, outcome):
     matchingCourseIDs = set()
     for courseID in courseIDs:
         courseOutcomeGroupLinks = canvas.getCoursesOutcomeGroupLinksObjects(courseID)
@@ -57,6 +30,33 @@ def getCourseAssignmentsWithOutcome(canvas, courseIDs, outcome):
                     matchingCourseAssignments.append(assignment)
                     break
     return matchingCourseAssignments
+
+
+def main():
+    canvas = getCanvasInstance()
+
+    outcomeID = config.Canvas.TARGET_OUTCOME_ID
+    verifiedOutcome = canvas.getOutcomeObject(outcomeID)
+
+    assert verifiedOutcome is not None, \
+        'Outcome {} was not found'.format(outcomeID)
+
+    courseIDs = config.Canvas.COURSE_ID_SET
+    print 'possible course IDs:', courseIDs
+
+    matchingCourseIDs = getCourseIDsWithOutcome(canvas, courseIDs, verifiedOutcome)
+
+    print 'matching course IDs:', matchingCourseIDs
+
+    assert len(matchingCourseIDs) > 0, \
+        'No courses linked to Outcome {} were found'.format(outcomeID)
+
+    matchingCourseAssignments = getCourseAssignmentsWithOutcome(canvas, matchingCourseIDs, verifiedOutcome)
+
+    print 'matching course assignments:', [
+        (assignment.name, assignment.id)
+        for assignment
+        in matchingCourseAssignments]
 
 
 if '__main__' == __name__:
