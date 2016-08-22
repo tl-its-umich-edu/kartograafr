@@ -63,9 +63,20 @@ class CanvasAPI(RequestsPlus):
         outcomeObject = None
         outcomeResponse = self.getOutcome(outcomeID)
         if outcomeResponse.ok:
-            # Return only the first one, since there should be only one.
-            outcomeObject = self.responseCollection(outcomeResponse) \
-                .jsonObjects(object_hook=self.jsonObjectHook).pop()
+            outcomeObjects = self.responseCollection(outcomeResponse) \
+                .jsonObjects(object_hook=self.jsonObjectHook)
+
+            outcomeObjectCount = len(outcomeObjects)
+
+            if outcomeObjectCount == 0:
+                print 'log: successful response, but no outcome returned for ID: {}.' \
+                    .format(outcomeID)
+            else:
+                if outcomeObjectCount > 1:
+                    print 'log: successful response, but {} outcomes returned for ID: {}.' \
+                        .format(outcomeObjectCount, outcomeID)
+
+                outcomeObject = outcomeObjects.pop()
 
         return outcomeObject
 
