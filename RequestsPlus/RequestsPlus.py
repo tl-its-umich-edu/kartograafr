@@ -82,8 +82,6 @@ class RequestsPlus(util.UtilMixin, object):
         response = None
         sessionRequestMethod = self.session.__getattribute__(httpMethod)
 
-        print self.methodName() + '():', apiQueryURI, preparedAPIQueryURL
-
         try:
             response = sessionRequestMethod(preparedAPIQueryURL, **kwargs)
         except requests.exceptions.RequestException as e:
@@ -111,7 +109,6 @@ class RequestsPlus(util.UtilMixin, object):
         :return: Response object
         :rtype: requests.Response
         """
-        print self.methodName() + '():', apiQueryURI
 
         return self._sendRequest(self.methodName(), apiQueryURI, **kwargs)
 
