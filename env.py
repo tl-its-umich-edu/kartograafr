@@ -1,9 +1,8 @@
 """
-Set up the arcgis_canvas environment in an interactive interpreter
+Set up the kartograafr environment for use in an interactive interpreter.
+Intended to be called from developers' ~/.pythonrc files.
 """
 
-# import config
-# from canvas_api import *
 from main import *
 
 canvas = getCanvasInstance()
