@@ -29,9 +29,13 @@ class ResponseCollection(object):
 
     def json(self, **kwargs):
         """
+        Like the method from the requests Response class, return JSON from the
+        response.  Since this operates on a collection, it gets the JSON from
+        each Response object in the collection and combines them into one.
 
-        :param kwargs:
-        :return:
+        :param kwargs: Arguments to pass to Response.json()
+        :type kwargs: mixed
+        :return: Combined list of JSON from all Response objects
         :rtype: list of Any
         """
         allResponseJSON = []
@@ -117,9 +121,23 @@ class ResponseCollection(object):
         return self._currentResponse
 
     def getAllResponses(self):
+        """
+        Get all of the Response objects in the collection.
+
+        :return: All of the Response objects in the collection
+        :rtype: list of requests.models.Response
+        """
         return self._responses
 
     def addResponse(self, response):
+        """
+        Add a Response object to the collection.
+
+        :param response: A Response object to be added to the collection.
+        :type response: requests.models.Response
+        :return: The updated ResponseCollection
+        :rtype: ResponseCollection
+        """
         assert isinstance(response, requests.models.Response)
         self._responses.append(response)
 
