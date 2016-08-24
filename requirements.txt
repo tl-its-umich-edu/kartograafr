@@ -1,5 +1,13 @@
+# For more information, see:
+# * https://www.python.org/dev/peps/pep-0496/
+
+# IntelliJ IDEA's Python plugin has a bug that causes it to always report
+# this Python version requirement as not satisfied.  It's valid for pip.
 python >= 2.7
+
 requests
 urlnorm
-#arcrest_package
+
+# Esri's "arcrest_package" from PyPI has bugs and directory layout problems.
+# Instead, install from bugfix branch of TL fork and use directory workaround.
 git+https://github.com/tl-its-umich-edu/ArcREST.git@umich-bugfixes#egg=arcrest&subdirectory=src
