@@ -1,13 +1,23 @@
 # For more information, see:
 # * https://www.python.org/dev/peps/pep-0496/
 
-# IntelliJ IDEA's Python plugin has a bug that causes it to always report
-# this Python version requirement as not satisfied.  It's valid for pip.
+# IntelliJ IDEA's Python plugin has a bug that causes it to always
+# report this Python version requirement as not satisfied.  It's
+# valid for pip.  IDEA can be told to ignore this requirement.
 python >= 2.7
 
 requests
 urlnorm
 
-# Esri's "arcrest_package" from PyPI has bugs and directory layout problems.
-# Instead, install from bugfix branch of TL fork and use directory workaround.
+# Beautiful Soup 4 is usually intalled as the package "beautifulsoup4".
+# However, installing it by that name causes IntelliJ IDEA's Python
+# plugin to always report "Package requirement 'bs4' is not satisfied"
+# for every "import bs4" statement.  Installing the "bs4" package
+# "stub" instead gets around this problem.
+bs4
+
+
+# Esri's "arcrest_package" from PyPI has bugs and directory layout
+# problems. Instead, install from bugfix branch of TL fork and use
+# directory workaround.
 git+https://github.com/tl-its-umich-edu/ArcREST.git@umich-bugfixes#egg=arcrest&subdirectory=src
