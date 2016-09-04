@@ -31,7 +31,6 @@ class CaptureStdoutLines(list):
 
     def __exit__(self, *args):
         self.extend(self._stdoutStream.getvalue().splitlines())
-        self.notEmpty = len(self) != 0
         sys.stdout = self._originalStdout
 
 
@@ -49,3 +48,12 @@ def stringContainsAllCharacters(string, characters):
     assert type(string) is str
     assert iter(characters)
     return False not in [character in string for character in characters]
+
+
+def formatNameAndID(object):
+    name = object.name if 'name' in object else object.title
+    return '"{}" ({})'.format(name, object.id)
+
+
+def formatNamesAndIDs(objects):
+    return map(formatNameAndID, objects)
