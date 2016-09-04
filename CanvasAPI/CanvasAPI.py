@@ -175,9 +175,6 @@ class CanvasAPI(RequestsPlus):
         queryURI = self._QueryURIs.COURSES_USERS.format(courseID=courseID)
         response = self.get(queryURI, params=kwargs)
 
-        import json
-        print(json.dumps(response.json(), indent=4))
-
         return response
 
     def getCoursesUsersObjects(self, courseID, enrollmentType=None, **kwargs):
