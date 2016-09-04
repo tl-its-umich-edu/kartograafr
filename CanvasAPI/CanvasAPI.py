@@ -153,28 +153,41 @@ class CanvasAPI(RequestsPlus):
 
         return coursesAssignments
 
-    def getCoursesUsers(self, courseID):
+    def getCoursesUsers(self, courseID, enrollmentType=None, **kwargs):
         """
         Get Canvas Users objects as requests Response object.  May be one of multiple pages.
 
         :param courseID: ID number of the Canvas course object's User Objects to be retrieved
         :type courseID: int
+        :param enrollmentType:
+        :type enrollmentType: str
         :return:
         :rtype: requests.models.Response
         """
         assert type(courseID) is int
 
+        if enrollmentType:
+            if not isinstance(enrollmentType, str):
+                raise TypeError('enrollmentType must be string')
+            if 'enrollment_type' not in kwargs:
+                kwargs['enrollment_type'] = str(enrollmentType)
+
         queryURI = self._QueryURIs.COURSES_USERS.format(courseID=courseID)
-        response = self.get(queryURI)
+        response = self.get(queryURI, params=kwargs)
+
+        import json
+        print(json.dumps(response.json(), indent=4))
 
         return response
 
-    def getCoursesUsersObjects(self, courseID):
+    def getCoursesUsersObjects(self, courseID, enrollmentType=None, **kwargs):
         """
         Get Canvas User objects as CanvasObjects parsed from JSON
 
         :param courseID: ID number of the Canvas Course object to find User objects
         :type courseID: int
+        :param enrollmentType:
+        :type enrollmentType: str
         :return: An object representing the Canvas Users contained
             in the API response, otherwise :class:`None<None>`
         :rtype: CanvasObject
@@ -182,7 +195,7 @@ class CanvasAPI(RequestsPlus):
         assert type(courseID) is int
 
         coursesUsers = None
-        response = self.getCoursesUsers(courseID)
+        response = self.getCoursesUsers(courseID, enrollmentType=enrollmentType, **kwargs)
         if response.ok:
             coursesUsers = self.responseCollection(response).collectAllResponsePages() \
                 .jsonObjects(object_hook=self.jsonObjectHook)
@@ -236,4 +249,3 @@ class CanvasAPI(RequestsPlus):
                 course = courseObjects.pop()
 
         return course
-
