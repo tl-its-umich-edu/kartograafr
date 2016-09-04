@@ -11,8 +11,10 @@ class Canvas(object):
 
 
 class ArcGIS(object):
+    ORG_NAME = 'devumich'
     SECURITYINFO = {
         'username': '',
         'password': '',
         'security_type': 'Portal',  # Default: "Portal". "Required option" by bug in some ArcREST versions.
+        'org_url': 'https://{}.maps.arcgis.com'.format(ORG_NAME),
     }
