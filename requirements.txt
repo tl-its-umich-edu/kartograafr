@@ -6,6 +6,7 @@
 # valid for pip.  IDEA can be told to ignore this requirement.
 python >= 2.7
 
+python-dateutil
 requests
 urlnorm
 
@@ -14,6 +15,7 @@ urlnorm
 # plugin to always report "Package requirement 'bs4' is not satisfied"
 # for every "import bs4" statement.  Installing the "bs4" package
 # "stub" instead gets around this problem.
+# See also: https://books.google.com/books?id=jgkGAAAAQAAJ&pg=PA160
 bs4
 
 
