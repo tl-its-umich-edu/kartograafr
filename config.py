@@ -1,3 +1,13 @@
+import os
+
+
+class Application(object):
+    class Logging(object):
+        DIRECTORY = '/tmp/log'
+        COURSE_DIRECTORY = os.path.join(DIRECTORY, 'courses')
+        MAIN_LOG = 'main.log'
+
+
 class Canvas(object):
     API_BASE_URL = 'https://umich.instructure.com/api/v1/'
     API_AUTHZ_TOKEN = ''  # Token goes here
@@ -13,8 +23,8 @@ class Canvas(object):
 class ArcGIS(object):
     ORG_NAME = 'devumich'
     SECURITYINFO = {
-        'username': '',
-        'password': '',
         'security_type': 'Portal',  # Default: "Portal". "Required option" by bug in some ArcREST versions.
         'org_url': 'https://{}.maps.arcgis.com'.format(ORG_NAME),
+        'username': '',
+        'password': '',
     }
