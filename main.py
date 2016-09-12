@@ -238,6 +238,12 @@ def getCoursesUsersByID(canvas, courseIDs, enrollmentType=None):
     return coursesUsers
 
 
+def getCourseLogFilePath(courseID):
+    return os.path.realpath(os.path.normpath(os.path.join(
+        config.Application.Logging.COURSE_DIRECTORY,
+        courseID + '.log', )))
+
+
 def getCourseLogHandler(courseID, courseName):
     """
     :param courseID: ID number of the course
@@ -255,11 +261,7 @@ def getCourseLogHandler(courseID, courseName):
     if courseID in courseLogHandlers:
         return courseLogHandlers[courseID]
 
-    courseLogHandler = logging.FileHandler(
-        os.path.realpath(os.path.normpath(os.path.join(
-            config.Application.Logging.COURSE_DIRECTORY,
-            courseID + '.log',
-        ))))
+    courseLogHandler = logging.FileHandler(getCourseLogFilePath(courseID))
     courseLogHandler.setFormatter(logFormatter)
 
     courseLogHandlers[courseID] = courseLogHandler
