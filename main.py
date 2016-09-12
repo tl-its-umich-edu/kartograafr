@@ -62,8 +62,8 @@ def getCourseIDsWithOutcome(canvas, courseIDs, outcome):
 
         # Is it possible to short-circuit this using itertools?
         matchingCourseIDs.update(
-            {courseID for outcomeLink in courseOutcomeGroupLinks
-             if outcomeLink.outcome.id == outcome.id}
+            set(courseID for outcomeLink in courseOutcomeGroupLinks
+             if outcomeLink.outcome.id == outcome.id)
         )
 
     return matchingCourseIDs

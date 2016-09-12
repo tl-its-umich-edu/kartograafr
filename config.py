@@ -15,11 +15,11 @@ class Canvas(object):
     TARGET_OUTCOME_ID = 2501  # ArcGIS Mapping Skills
     CONFIG_COURSE_ID = 138596
     CONFIG_COURSE_PAGE_NAME = 'course-ids'
-    COURSE_ID_SET = {
+    COURSE_ID_SET = set((
         85489,  # Practice Course for Lance Sloan (LANCE PRACTICE)
         114488,  # First ArcGIS Course (ARCGIS-1)
         135885,  # Another ArcGIS Course (ARCGIS-2)
-    }
+    ))
 
 
 class ArcGIS(object):
