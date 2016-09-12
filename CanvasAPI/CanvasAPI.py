@@ -10,6 +10,7 @@ class CanvasAPI(RequestsPlus):
         OUTCOMES = '/outcomes/{outcomeID}'  #: Get a single Outcome by ID
         COURSES_ASSIGNMENTS = '/courses/{courseID}/assignments'
         COURSES_USERS = '/courses/{courseID}/users'
+        COURSES_PAGES_BY_NAME = '/courses/{courseID}/pages/{pageName}'
 
     def __init__(self, apiBaseURL, contentType=MIME_TYPE_JSON, authZToken=None, authZType=AUTHZ_TYPE_BEARER):
         """
@@ -198,6 +199,48 @@ class CanvasAPI(RequestsPlus):
                 .jsonObjects(object_hook=self.jsonObjectHook)
 
         return coursesUsers
+
+    def getCoursesPagesByName(self, courseID, pageName, **kwargs):
+        """
+        Get Canvas Users objects as requests Response object.  May be one of multiple pages.
+
+        :param courseID: ID number of the Canvas course object's User Objects to be retrieved
+        :type courseID: int
+        :param enrollmentType:
+        :type enrollmentType: str
+        :return:
+        :rtype: requests.models.Response
+        """
+        assert isinstance(courseID, int)
+        assert isinstance(pageName, str)
+
+        queryURI = self._QueryURIs.COURSES_PAGES_BY_NAME.format(courseID=courseID, pageName=pageName)
+        response = self.get(queryURI, params=kwargs)
+
+        return response
+
+    def getCoursesPagesByNameObjects(self, courseID, pageName, **kwargs):
+        """
+        Get Canvas User objects as CanvasObjects parsed from JSON
+
+        :param courseID: ID number of the Canvas Course object to find User objects
+        :type courseID: int
+        :param enrollmentType:
+        :type enrollmentType: str
+        :return: An object representing the Canvas Users contained
+            in the API response, otherwise :class:`None<None>`
+        :rtype: CanvasObject
+        """
+        assert isinstance(courseID, int)
+        assert isinstance(pageName, str)
+
+        coursesPages = None
+        response = self.getCoursesPagesByName(courseID, pageName, **kwargs)
+        if response.ok:
+            coursesPages = self.responseCollection(response).collectAllResponsePages() \
+                .jsonObjects(object_hook=self.jsonObjectHook)
+
+        return coursesPages
 
     def getCourse(self, courseID):
         """
