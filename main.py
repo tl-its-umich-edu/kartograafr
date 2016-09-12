@@ -1,18 +1,28 @@
 from __future__ import print_function
 
 import datetime
+import logging
+import os
+import re
 
 import arcrest
 import dateutil.parser
 import dateutil.tz
 from arcrest.manageorg._community import Group
 from arcresthelper import common, orgtools, securityhandlerhelper
+from bs4 import BeautifulSoup
+from bs4.builder._htmlparser import HTMLParserTreeBuilder
 
 import config
 import util
 from CanvasAPI import CanvasAPI
 
-runStartTime = datetime.datetime.now(tz=dateutil.tz.tzutc())
+TIMEZONE_UTC = dateutil.tz.tzutc()
+RUN_START_TIME = datetime.datetime.now(tz=TIMEZONE_UTC)
+
+logger = None  # type: logging.Logger
+logFormatter = None  # type: logging.Formatter
+courseLogHandlers = dict()
 
 
 def getCanvasInstance():
@@ -66,10 +76,10 @@ def getCourseAssignmentsWithOutcome(canvas, courseIDs, outcome):
 
         for assignment in courseAssignments:
             expirationTimestamp = assignment.lock_at or assignment.due_at
-            expirationTime = dateutil.parser.parse(expirationTimestamp) if expirationTimestamp else runStartTime
-            if (expirationTime < runStartTime):
-                print('Skipping Assignment {}, expired on:'.format(util.formatNameAndID(assignment)),
-                      assignment.lock_at if assignment.lock_at else assignment.due_at)
+            expirationTime = dateutil.parser.parse(expirationTimestamp) if expirationTimestamp else RUN_START_TIME
+            if (expirationTime < RUN_START_TIME):
+                logger.info('Skipping Assignment {}, expired on: {}'.format(assignment,
+                                                                            assignment.lock_at if assignment.lock_at else assignment.due_at))
                 continue
             for rubric in assignment.rubric:
                 if rubric.outcome_id == outcome.id:
@@ -100,101 +110,107 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
 
 
 def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, courseUserDictionary):
+    global logger  # type: logging.Logger
     groupTags = ','.join(('kartograafr', 'umich'))
 
     for assignment in assignments:
         course = courseDictionary[assignment.course_id]
-        groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
-        group = None
 
-        print('Searching for existing ArcGIS group "{}"'.format(groupTitle))
+        with util.LoggingContext(logger, handler=getCourseLogHandler(course.id, course.name)):
+            groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
+            group = None
 
-        with util.CaptureStdoutLines() as output:
-            try:
-                arcGISAdmin = arcrest.manageorg.Administration(securityHandler=arcGIS.securityhandler)
-                group = getArcGISGroupByTitle(arcGISAdmin, groupTitle)
-            except Exception as exception:
-                print('Exception while searching for ArcGIS group "{}":'.format(groupTitle), exception)
+            logger.info('Searching for existing ArcGIS group "{}"'.format(groupTitle))
 
-        if output:
-            print('Unexpected output while searching for ArcGIS group "{}": {}'
-                  .format(groupTitle, output))
-
-        if group is not None:
-            groupNameAndID = util.formatNameAndID(group)
-            print('Found ArcGIS group:', groupNameAndID)
-
-            groupAllMembers = {}
             with util.CaptureStdoutLines() as output:
                 try:
-                    groupAllMembers = group.groupUsers()
+                    arcGISAdmin = arcrest.manageorg.Administration(securityHandler=arcGIS.securityhandler)
+                    group = getArcGISGroupByTitle(arcGISAdmin, groupTitle)
                 except Exception as exception:
-                    print('Exception while getting users for ArcGIS group "{}":'.format(groupNameAndID), exception)
+                    logger.info('Exception while searching for ArcGIS group "{}": {}'.format(groupTitle, exception))
 
             if output:
-                print('Unexpected output while getting users for ArcGIS group "{}": {}'
-                      .format(groupNameAndID, output))
+                logger.info('Unexpected output while searching for ArcGIS group "{}": {}'
+                            .format(groupTitle, output))
 
-            groupUsers = groupAllMembers.get('users')
-            """:type groupUsers: list"""
+            if group is not None:
+                groupNameAndID = util.formatNameAndID(group)
+                logger.info('Found ArcGIS group: {}'.format(groupNameAndID))
 
-            if not groupUsers:
-                print('Existing ArcGIS group {} does not have users to remove.'.format(groupNameAndID))
-            else:
-                print('ArcGIS Users to be removed from ArcGIS Group {} '
-                      'before reloading with all Canvas course users:'.format(groupNameAndID), groupUsers)
-
-                results = None
+                groupAllMembers = {}
                 with util.CaptureStdoutLines() as output:
                     try:
-                        results = group.removeUsersFromGroup(','.join(groupUsers))
+                        groupAllMembers = group.groupUsers()
                     except Exception as exception:
-                        print('Exception while removing users from ArcGIS group "{}":'
-                              .format(groupNameAndID), exception)
+                        logger.info(
+                            'Exception while getting users for ArcGIS group "{}": {}'.format(groupNameAndID, exception))
 
                 if output:
-                    print('Unexpected output while removing users from ArcGIS group "{}": {}'
-                          .format(groupNameAndID, output))
+                    logger.info('Unexpected output while getting users for ArcGIS group "{}": {}'
+                                .format(groupNameAndID, output))
 
-                usersNotRemoved = results.get('notRemoved')
-                """:type usersNotRemoved: list"""
+                groupUsers = groupAllMembers.get('users')
+                """:type groupUsers: list"""
 
-                if usersNotRemoved:
-                    print('Warning: Some or all users not removed from ArcGIS group {}:'
-                          .format(groupNameAndID), usersNotRemoved)
-        else:
-            print('Creating ArcGIS group: "{}"'.format(groupTitle))
+                if not groupUsers:
+                    logger.info('Existing ArcGIS group {} does not have users to remove.'.format(groupNameAndID))
+                else:
+                    logger.info('ArcGIS Users to be removed from ArcGIS Group {} '
+                                'before reloading with all Canvas course users: {}'.format(groupNameAndID, groupUsers))
 
-            with util.CaptureStdoutLines() as output:
-                try:
-                    arcGISOrgTools = orgtools.orgtools(arcGIS)
-                    group = arcGISOrgTools.createGroup(groupTitle, groupTags)
-                except Exception as exception:
-                    print('Exception while creating ArcGIS group "{}":'.format(groupTitle), exception)
+                    results = None
+                    with util.CaptureStdoutLines() as output:
+                        try:
+                            results = group.removeUsersFromGroup(','.join(groupUsers))
+                        except Exception as exception:
+                            logger.info('Exception while removing users from ArcGIS group "{}": {}'
+                                        .format(groupNameAndID, exception))
 
-            if output:
-                print('Unexpected output while creating ArcGIS group "{}": {}'
-                      .format(groupTitle, output))
+                    if output:
+                        logger.info('Unexpected output while removing users from ArcGIS group "{}": {}'
+                                    .format(groupNameAndID, output))
 
-        if group is None:
-            print('Problem creating ArcGIS group "{}": No errors, exceptions, or group object.'
-                  .format(groupTitle))
-            continue
+                    usersNotRemoved = results.get('notRemoved')
+                    """:type usersNotRemoved: list"""
 
-        courseUsers = [user.login_id for user in courseUserDictionary[course.id]]
-        print('Adding Canvas Users to ArcGIS Group {}:'.format(util.formatNameAndID(group)), courseUsers)
+                    if usersNotRemoved:
+                        logger.info('Warning: Some or all users not removed from ArcGIS group {}: {}'
+                                    .format(groupNameAndID, usersNotRemoved))
+            else:
+                logger.info('Creating ArcGIS group: "{}"'.format(groupTitle))
 
-        # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name, separated by an underscore
-        arcGISUsers = [user + '_' + config.ArcGIS.ORG_NAME for user in courseUsers]
+                with util.CaptureStdoutLines() as output:
+                    try:
+                        arcGISOrgTools = orgtools.orgtools(arcGIS)
+                        group = arcGISOrgTools.createGroup(groupTitle, groupTags)
+                    except Exception as exception:
+                        logger.info('Exception while creating ArcGIS group "{}": {}'.format(groupTitle, exception))
 
-        results = group.addUsersToGroups(users=','.join(arcGISUsers))
+                if output:
+                    logger.info('Unexpected output while creating ArcGIS group "{}": {}'
+                                .format(groupTitle, output))
 
-        usersNotAdded = results.get('notAdded')
-        """:type usersNotAdded: list"""
+            if group is None:
+                logger.info('Problem creating ArcGIS group "{}": No errors, exceptions, or group object.'
+                            .format(groupTitle))
+                continue
 
-        if usersNotAdded:
-            print('Warning: Some or all users not added to ArcGIS group {}:'
-                  .format(util.formatNameAndID(group)), usersNotAdded)
+            groupNameAndID = util.formatNameAndID(group)
+
+            courseUsers = [user.login_id for user in courseUserDictionary[course.id]]
+            logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
+
+            # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name, separated by an underscore
+            arcGISUsers = [user + '_' + config.ArcGIS.ORG_NAME for user in courseUsers]
+
+            results = group.addUsersToGroups(users=','.join(arcGISUsers))
+
+            usersNotAdded = results.get('notAdded')
+            """:type usersNotAdded: list"""
+
+            if usersNotAdded:
+                logger.info('Warning: Some or all users not added to ArcGIS group {}: {}'
+                            .format(groupNameAndID, usersNotAdded))
 
 
 def getCoursesByID(canvas, courseIDs):
@@ -211,60 +227,151 @@ def getCoursesUsersByID(canvas, courseIDs, enrollmentType=None):
     :type canvas: CanvasAPI
     :param courseIDs:
     :type courseIDs: set or list
-    :param enrollmentType: Canvas user enrollment type: 'student', 'teacher', etc.
+    :param enrollmentType: (optional) Canvas user enrollment type: 'student', 'teacher', etc.
     :type enrollmentType: str
     :return:
     """
     coursesUsers = {}
     for courseID in courseIDs:
-        coursesUsers[courseID] = canvas.getCoursesUsersObjects(courseID, enrollmentType=enrollmentType)
+        coursesUsers[courseID] = canvas.getCoursesUsersObjects(courseID, enrollmentType=enrollmentType,
+                                                               params={'include[]': 'email'})
     return coursesUsers
 
 
+def getCourseLogHandler(courseID, courseName):
+    """
+    :param courseID: ID number of the course
+    :type courseID: str or int
+    :param courseName: Name of the course
+    :type courseName: str
+    :return: A logging handler for a specific course's log file
+    :rtype: logging.FileHandler
+    """
+    global logFormatter  # type: logging.Formatter
+    global courseLogHandlers  # type: dict
+
+    courseID = str(courseID)
+
+    if courseID in courseLogHandlers:
+        return courseLogHandlers[courseID]
+
+    courseLogHandler = logging.FileHandler(
+        os.path.realpath(os.path.normpath(os.path.join(
+            config.Application.Logging.COURSE_DIRECTORY,
+            courseID + '.log',
+        ))))
+    courseLogHandler.setFormatter(logFormatter)
+
+    courseLogHandlers[courseID] = courseLogHandler
+
+    return courseLogHandler
+
+
+def closeAllCourseLogHandlers():
+    global courseLogHandlers
+
+    for (courseID, courseLogHandler) in courseLogHandlers.iteritems():
+        courseLogHandler.close()
+
+
+def getCourseIDsFromConfigCoursePage(canvas, courseID, pageName):
+    VALID_COURSE_URL_REGEX = '^https://umich\.instructure\.com/courses/[0-9]+$'
+    pages = canvas.getCoursesPagesByNameObjects(138596, 'course-ids')  # type: list of CanvasObject
+    courseIDs = None
+
+    if pages:
+        configCoursePage = pages.pop()
+        configCoursePageTree = BeautifulSoup(configCoursePage.body, builder=HTMLParserTreeBuilder())
+
+        courseURLs = set(map(
+            lambda a: a['href'],
+            configCoursePageTree.find_all('a', href=re.compile(VALID_COURSE_URL_REGEX))))
+        if courseURLs:
+            courseIDs = map(lambda url: int(url.split('/').pop()), courseURLs)
+
+    return courseIDs
+
+
 def main():
+    global logger
+    global logFormatter
+
+    logFormatter = util.Iso8601UTCTimeFormatter('%(asctime)s|%(levelname)s|%(name)s|%(message)s')
+
+    logHandler = logging.FileHandler(
+        os.path.realpath(os.path.normpath(os.path.join(
+            config.Application.Logging.DIRECTORY,
+            config.Application.Logging.MAIN_LOG,
+        ))))
+    logHandler.setFormatter(logFormatter)
+
+    logger = logging.getLogger('kartograafr')  # type: logging.Logger
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logHandler)
+
     canvas = getCanvasInstance()
     arcGIS = getArcGISConnection(config.ArcGIS.SECURITYINFO)
 
     outcomeID = config.Canvas.TARGET_OUTCOME_ID
-    print('Config -> Outcome ID to find:', outcomeID)
+    logger.info('Config -> Outcome ID to find: {}'.format(outcomeID))
 
     validOutcome = canvas.getOutcomeObject(outcomeID)
 
     if validOutcome is None:
         raise RuntimeError('Outcome ID {} was not found'.format(outcomeID))
 
-    validOutcomeName = util.formatNameAndID(validOutcome)
-    print('Config -> Found valid Outcome:', validOutcomeName)
+    logger.info('Config -> Found valid Outcome: {}'.format(validOutcome))
 
-    courseIDs = config.Canvas.COURSE_ID_SET
-    print('Config -> Course IDs to check for Outcome {}:'.format(validOutcomeName),
-          list(courseIDs))
+    configCourseID = config.Canvas.CONFIG_COURSE_ID
+    configCoursePageName = config.Canvas.CONFIG_COURSE_PAGE_NAME
+
+    logger.info('Config -> Attempting to get course IDs from page '
+                '"{configCoursePageName}" of course {configCourseID}...'
+                .format(**locals()))
+
+    courseIDs = getCourseIDsFromConfigCoursePage(canvas, configCourseID, configCoursePageName)
+
+    if courseIDs is None:
+        logger.warning('Config -> Course IDs not found in page '
+                       '"{configCoursePageName}" of course {configCourseID}. '
+                       'Using default course IDs instead.'
+                       .format(**locals()))
+        courseIDs = config.Canvas.COURSE_ID_SET
+    else:
+        logger.warning('Config -> Found Course IDs in page '
+                       '"{configCoursePageName}" of course {configCourseID}.'
+                       .format(**locals()))
+
+    logger.info('Config -> Course IDs to check for Outcome {}: {}'.format(validOutcome,
+                                                                          list(courseIDs)))
 
     matchingCourseIDs = getCourseIDsWithOutcome(canvas, courseIDs,
                                                 validOutcome)
 
     if len(matchingCourseIDs) == 0:
-        raise RuntimeError('No Courses linked to Outcome {} were found'.format(validOutcomeName))
+        raise RuntimeError('No Courses linked to Outcome {} were found'.format(validOutcome))
 
-    print('Config -> Found Course IDs for Outcome {}:'.format(validOutcomeName),
-          list(matchingCourseIDs))
+    logger.info('Config -> Found Course IDs for Outcome {}: {}'.format(validOutcome,
+                                                                       list(matchingCourseIDs)))
 
-    print('Searching specified Courses for Assignments linked to Outcome', validOutcomeName)
+    logger.info('Searching specified Courses for Assignments linked to Outcome {}'.format(validOutcome))
     matchingCourseAssignments = getCourseAssignmentsWithOutcome(
         canvas, matchingCourseIDs, validOutcome)
 
     # if len(matchingCourseAssignments) == 0:
     if not matchingCourseAssignments:
-        print('No valid Assignments linked to Outcome {} were found'.format(validOutcomeName))
+        logger.info('No valid Assignments linked to Outcome {} were found'.format(validOutcome))
         return
 
-    print('Found Assignments linked to Outcome {}:'.format(validOutcomeName),
-          ', '.join(util.formatNamesAndIDs(matchingCourseAssignments)))
+    logger.info('Found Assignments linked to Outcome {}: {}'.format(validOutcome,
+                                                                    ', '.join(map(str, matchingCourseAssignments))))
 
     courseDictionary = getCoursesByID(canvas, matchingCourseIDs)
     courseUserDictionary = getCoursesUsersByID(canvas, matchingCourseIDs)
 
     createArcGISGroupsForAssignments(arcGIS, matchingCourseAssignments, courseDictionary, courseUserDictionary)
+
+    closeAllCourseLogHandlers()
 
 
 if __name__ == '__main__':
