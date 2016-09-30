@@ -127,7 +127,7 @@ def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, cour
                     arcGISAdmin = arcrest.manageorg.Administration(securityHandler=arcGIS.securityhandler)
                     group = getArcGISGroupByTitle(arcGISAdmin, groupTitle)
                 except Exception as exception:
-                    logger.info('Exception while searching for ArcGIS group "{}": {}'.format(groupTitle, exception))
+                    logger.exception('Exception while searching for ArcGIS group "{}": {}'.format(groupTitle, exception))
 
             if output:
                 logger.info('Unexpected output while searching for ArcGIS group "{}": {}'
