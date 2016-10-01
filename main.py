@@ -174,7 +174,7 @@ def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, cour
                     """:type usersNotRemoved: list"""
 
                     if usersNotRemoved:
-                        logger.info('Warning: Some or all users not removed from ArcGIS group {}: {}'
+                        logger.warning('Warning: Some or all users not removed from ArcGIS group {}: {}'
                                     .format(groupNameAndID, usersNotRemoved))
             else:
                 logger.info('Creating ArcGIS group: "{}"'.format(groupTitle))
@@ -209,7 +209,7 @@ def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, cour
             """:type usersNotAdded: list"""
 
             if usersNotAdded:
-                logger.info('Warning: Some or all users not added to ArcGIS group {}: {}'
+                logger.warning('Warning: Some or all users not added to ArcGIS group {}: {}'
                             .format(groupNameAndID, usersNotAdded))
 
 
@@ -334,13 +334,13 @@ def main():
     courseIDs = getCourseIDsFromConfigCoursePage(canvas, configCourseID, configCoursePageName)
 
     if courseIDs is None:
-        logger.warning('Config -> Course IDs not found in page '
+        logger.warning('Warning: Config -> Course IDs not found in page '
                        '"{configCoursePageName}" of course {configCourseID}. '
                        'Using default course IDs instead.'
                        .format(**locals()))
         courseIDs = config.Canvas.COURSE_ID_SET
     else:
-        logger.warning('Config -> Found Course IDs in page '
+        logger.info('Config -> Found Course IDs in page '
                        '"{configCoursePageName}" of course {configCourseID}.'
                        .format(**locals()))
 
