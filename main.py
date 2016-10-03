@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import argparse
 import datetime
 import logging
 import os
@@ -294,6 +295,69 @@ def getCourseIDsFromConfigCoursePage(canvas, courseID, pageName):
     return courseIDs
 
 
+def renameLogForCourseID(courseID):
+    courseID = str(courseID)
+
+    oldLogName = getCourseLogFilePath(courseID)
+    newLogName = getCourseLogFilePath(courseID + '-' + RUN_START_TIME.strftime('%Y%m%d%H%M%S'))
+
+    os.rename(oldLogName, newLogName)
+
+    return (oldLogName, newLogName)
+
+def emailLogForCourseID(courseID, recipients):
+    import smtplib
+    from email.mime.text import MIMEText
+
+    if not isinstance(recipients, list):
+        recipients = [recipients]
+
+    courseID = str(courseID)
+
+    logContent = None
+
+    try:
+        logfile = open(getCourseLogFilePath(courseID), 'rb')
+        logContent = logfile.read()
+        logfile.close()
+    except Exception as exception:
+        logger.warning('Exception while trying to email logfile for course {courseID}: {exception}'
+                       .format(**locals()))
+        return
+
+    message = MIMEText(logContent)
+    message['From'] = config.Application.Email.FROM_ADDRESS
+    message['To'] = ', '.join(recipients)
+    message['Subject'] = config.Application.Email.SUBJECT.format(**locals())
+
+    try:
+        server = smtplib.SMTP(config.Application.Email.SMTP_SERVER)
+        server.sendmail(config.Application.Email.FROM_ADDRESS, recipients, message.as_string())
+        server.quit()
+        logger.info('Email sent to {recipients} for course {courseID}'.format(**locals()))
+    except Exception as exception:
+        logger.exception('Failed to send email to {recipients} for course {courseID}.  Exception: {exception}'
+                         .format(**locals()))
+
+    try:
+        (oldLogName, newLogName) = renameLogForCourseID(courseID)
+        logger.info('Renamed course log "{oldLogName}" to "{newLogName}"'.format(**locals()))
+    except Exception as exception:
+        logger.exception('Failed to rename log file for course {courseID}.  Exception: {exception}'
+                         .format(**locals()))
+
+
+def emailCourseLogs(courseInstructors):
+    """
+    :param courseInstructors: Dictionary of courses to list of their instructors
+    :type courseInstructors: dict
+    """
+    logger.info('Preparing to send email to instructors...')
+
+    for courseID, instructors in courseInstructors.items():
+        recipients = map(lambda i: i.sis_login_id + '@umich.edu', instructors)
+        emailLogForCourseID(courseID, recipients)
+
 def main():
     global logger
     global logFormatter
@@ -310,6 +374,18 @@ def main():
     logger = logging.getLogger('kartograafr')  # type: logging.Logger
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logHandler)
+
+    argumentParser = argparse.ArgumentParser()
+    argumentParser.add_argument('--mail', '--email', dest='sendEmail', action='store_true',
+                        help='email all available course logs to instructors')
+    options, unknownOptions = argumentParser.parse_known_args()
+
+    if unknownOptions:
+        logger.warning('unrecognized arguments: %s' % ' '.join(unknownOptions))
+        logger.warning(argumentParser.format_usage())
+
+    logger.info('{} email to instructors with logs after courses are processed'
+                .format('Sending' if options.sendEmail else 'Not sending'))
 
     canvas = getCanvasInstance()
     arcGIS = getArcGISConnection(config.ArcGIS.SECURITYINFO)
@@ -360,7 +436,6 @@ def main():
     matchingCourseAssignments = getCourseAssignmentsWithOutcome(
         canvas, matchingCourseIDs, validOutcome)
 
-    # if len(matchingCourseAssignments) == 0:
     if not matchingCourseAssignments:
         logger.info('No valid Assignments linked to Outcome {} were found'.format(validOutcome))
         return
@@ -370,11 +445,16 @@ def main():
 
     courseDictionary = getCoursesByID(canvas, matchingCourseIDs)
     courseUserDictionary = getCoursesUsersByID(canvas, matchingCourseIDs)
+    courseInstructorDictionary = getCoursesUsersByID(canvas, matchingCourseIDs, 'teacher')
 
     createArcGISGroupsForAssignments(arcGIS, matchingCourseAssignments, courseDictionary, courseUserDictionary)
 
     closeAllCourseLogHandlers()
 
+    if options.sendEmail:
+        emailCourseLogs(courseInstructorDictionary)
+
 
 if __name__ == '__main__':
     main()
+
