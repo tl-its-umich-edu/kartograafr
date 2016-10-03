@@ -2,6 +2,11 @@ import os
 
 
 class Application(object):
+    class Email(object):
+        SMTP_SERVER = '127.0.0.1'
+        FROM_ADDRESS = '"ArcGIS-Canvas Service" <kartograafr-service@umich.edu>'
+        SUBJECT = 'ArcGIS-Canvas logs for course ID {courseID}'
+
     class Logging(object):
         DIRECTORY = '/tmp/log'
         COURSE_DIRECTORY = os.path.join(DIRECTORY, 'courses')
