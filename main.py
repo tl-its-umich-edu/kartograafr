@@ -64,7 +64,7 @@ def getCourseIDsWithOutcome(canvas, courseIDs, outcome):
         # Is it possible to short-circuit this using itertools?
         matchingCourseIDs.update(
             set(courseID for outcomeLink in courseOutcomeGroupLinks
-             if outcomeLink.outcome.id == outcome.id)
+                if outcomeLink.outcome.id == outcome.id)
         )
 
     return matchingCourseIDs
@@ -128,7 +128,8 @@ def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, cour
                     arcGISAdmin = arcrest.manageorg.Administration(securityHandler=arcGIS.securityhandler)
                     group = getArcGISGroupByTitle(arcGISAdmin, groupTitle)
                 except Exception as exception:
-                    logger.exception('Exception while searching for ArcGIS group "{}": {}'.format(groupTitle, exception))
+                    logger.exception(
+                        'Exception while searching for ArcGIS group "{}": {}'.format(groupTitle, exception))
 
             if output:
                 logger.info('Unexpected output while searching for ArcGIS group "{}": {}'
@@ -176,7 +177,7 @@ def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, cour
 
                     if usersNotRemoved:
                         logger.warning('Warning: Some or all users not removed from ArcGIS group {}: {}'
-                                    .format(groupNameAndID, usersNotRemoved))
+                                       .format(groupNameAndID, usersNotRemoved))
             else:
                 logger.info('Creating ArcGIS group: "{}"'.format(groupTitle))
 
@@ -211,7 +212,7 @@ def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, cour
 
             if usersNotAdded:
                 logger.warning('Warning: Some or all users not added to ArcGIS group {}: {}'
-                            .format(groupNameAndID, usersNotAdded))
+                               .format(groupNameAndID, usersNotAdded))
 
 
 def getCoursesByID(canvas, courseIDs):
@@ -305,6 +306,7 @@ def renameLogForCourseID(courseID):
 
     return (oldLogName, newLogName)
 
+
 def emailLogForCourseID(courseID, recipients):
     import smtplib
     from email.mime.text import MIMEText
@@ -317,7 +319,8 @@ def emailLogForCourseID(courseID, recipients):
     logContent = None
 
     try:
-        logfile = open(getCourseLogFilePath(courseID), 'rb')
+        READ_BINARY_MODE = 'rb'
+        logfile = open(getCourseLogFilePath(courseID), mode=READ_BINARY_MODE)
         logContent = logfile.read()
         logfile.close()
     except Exception as exception:
@@ -326,13 +329,13 @@ def emailLogForCourseID(courseID, recipients):
         return
 
     message = MIMEText(logContent)
-    message['From'] = config.Application.Email.FROM_ADDRESS
+    message['From'] = config.Application.Email.SENDER_ADDRESS
     message['To'] = ', '.join(recipients)
     message['Subject'] = config.Application.Email.SUBJECT.format(**locals())
 
     try:
         server = smtplib.SMTP(config.Application.Email.SMTP_SERVER)
-        server.sendmail(config.Application.Email.FROM_ADDRESS, recipients, message.as_string())
+        server.sendmail(config.Application.Email.SENDER_ADDRESS, recipients, message.as_string())
         server.quit()
         logger.info('Email sent to {recipients} for course {courseID}'.format(**locals()))
     except Exception as exception:
@@ -355,8 +358,11 @@ def emailCourseLogs(courseInstructors):
     logger.info('Preparing to send email to instructors...')
 
     for courseID, instructors in courseInstructors.items():
-        recipients = map(lambda i: i.sis_login_id + '@umich.edu', instructors)
+        recipients = map(lambda instructor: instructor.sis_login_id +
+                                            config.Application.Email.RECIPIENT_AT_DOMAIN,
+                         instructors)
         emailLogForCourseID(courseID, recipients)
+
 
 def main():
     global logger
@@ -371,18 +377,22 @@ def main():
         ))))
     logHandler.setFormatter(logFormatter)
 
-    logger = logging.getLogger('kartograafr')  # type: logging.Logger
+    logger = logging.getLogger(config.Application.Logging.MAIN_LOGGER_NAME)  # type: logging.Logger
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logHandler)
 
     argumentParser = argparse.ArgumentParser()
-    argumentParser.add_argument('--mail', '--email', dest='sendEmail', action='store_true',
-                        help='email all available course logs to instructors')
+    argumentParser.add_argument('--mail', '--email', dest='sendEmail',
+                                action=argparse._StoreTrueAction,
+                                help='email all available course logs to instructors')
     options, unknownOptions = argumentParser.parse_known_args()
 
     if unknownOptions:
-        logger.warning('unrecognized arguments: %s' % ' '.join(unknownOptions))
+        unknownOptionMessage = 'unrecognized arguments: %s' % ' '.join(unknownOptions)
+        logger.warning(unknownOptionMessage)
         logger.warning(argumentParser.format_usage())
+        print(unknownOptionMessage)
+        print(argumentParser.format_usage())
 
     logger.info('{} email to instructors with logs after courses are processed'
                 .format('Sending' if options.sendEmail else 'Not sending'))
@@ -417,8 +427,8 @@ def main():
         courseIDs = config.Canvas.COURSE_ID_SET
     else:
         logger.info('Config -> Found Course IDs in page '
-                       '"{configCoursePageName}" of course {configCourseID}.'
-                       .format(**locals()))
+                    '"{configCoursePageName}" of course {configCourseID}.'
+                    .format(**locals()))
 
     logger.info('Config -> Course IDs to check for Outcome {}: {}'.format(validOutcome,
                                                                           list(courseIDs)))
@@ -457,4 +467,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
