@@ -1,7 +1,0 @@
-# During 08:00 and 15:00 runs, process assignment groups and
-# send email to instructors
-0 8,15 * * * /usr/bin/python /usr/local/apps/kartograafr/main.py --send-email
-
-# During all other hourly runs, process assignment groups without
-# sending email to instructors
-0 0-7,9-14,16-23 * * * /usr/bin/python /usr/local/apps/kartograafr/main.py
