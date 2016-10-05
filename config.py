@@ -13,7 +13,8 @@ class Application(object):
         MAIN_LOGGER_NAME = 'kartograafr'
         DIRECTORY = '/tmp/log'
         COURSE_DIRECTORY = os.path.join(DIRECTORY, 'courses')
-        MAIN_LOG = 'main.log'
+        MAIN_LOG_BASENAME = 'main'
+        LOG_FILENAME_EXTENSION = '.log'
 
 
 class Canvas(object):

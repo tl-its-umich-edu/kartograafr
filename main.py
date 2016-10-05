@@ -20,6 +20,7 @@ from CanvasAPI import CanvasAPI
 
 TIMEZONE_UTC = dateutil.tz.tzutc()
 RUN_START_TIME = datetime.datetime.now(tz=TIMEZONE_UTC)
+RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
 
 logger = None  # type: logging.Logger
 logFormatter = None  # type: logging.Formatter
@@ -243,7 +244,20 @@ def getCoursesUsersByID(canvas, courseIDs, enrollmentType=None):
 def getCourseLogFilePath(courseID):
     return os.path.realpath(os.path.normpath(os.path.join(
         config.Application.Logging.COURSE_DIRECTORY,
-        courseID + '.log', )))
+        courseID + config.Application.Logging.LOG_FILENAME_EXTENSION,
+    )))
+
+
+def getMainLogFilePath(nameSuffix=None):
+    mainLogName = config.Application.Logging.MAIN_LOG_BASENAME
+
+    if nameSuffix is not None:
+        mainLogName += '-' + str(nameSuffix)
+
+    return os.path.realpath(os.path.normpath(os.path.join(
+        config.Application.Logging.DIRECTORY,
+        mainLogName + config.Application.Logging.LOG_FILENAME_EXTENSION,
+    )))
 
 
 def getCourseLogHandler(courseID, courseName):
@@ -296,11 +310,18 @@ def getCourseIDsFromConfigCoursePage(canvas, courseID, pageName):
     return courseIDs
 
 
-def renameLogForCourseID(courseID):
-    courseID = str(courseID)
+def renameLogForCourseID(courseID=-1):
+    if courseID == -1:
+        raise RuntimeError('Renaming logs requires either a course ID number to rename the log for that course, '
+                           'or the None value to rename the main log.')
 
-    oldLogName = getCourseLogFilePath(courseID)
-    newLogName = getCourseLogFilePath(courseID + '-' + RUN_START_TIME.strftime('%Y%m%d%H%M%S'))
+    if courseID is not None:
+        courseID = str(courseID)
+        oldLogName = getCourseLogFilePath(courseID)
+        newLogName = getCourseLogFilePath(courseID + '-' + RUN_START_TIME_FORMATTED)
+    else:
+        oldLogName = getMainLogFilePath()
+        newLogName = getMainLogFilePath(nameSuffix=RUN_START_TIME_FORMATTED)
 
     os.rename(oldLogName, newLogName)
 
@@ -370,11 +391,7 @@ def main():
 
     logFormatter = util.Iso8601UTCTimeFormatter('%(asctime)s|%(levelname)s|%(name)s|%(message)s')
 
-    logHandler = logging.FileHandler(
-        os.path.realpath(os.path.normpath(os.path.join(
-            config.Application.Logging.DIRECTORY,
-            config.Application.Logging.MAIN_LOG,
-        ))))
+    logHandler = logging.FileHandler(getMainLogFilePath())
     logHandler.setFormatter(logFormatter)
 
     logger = logging.getLogger(config.Application.Logging.MAIN_LOGGER_NAME)  # type: logging.Logger
@@ -384,15 +401,19 @@ def main():
     argumentParser = argparse.ArgumentParser()
     argumentParser.add_argument('--mail', '--email', dest='sendEmail',
                                 action=argparse._StoreTrueAction,
-                                help='email all available course logs to instructors')
+                                help='email all available course logs to instructors, then rename all logs')
     options, unknownOptions = argumentParser.parse_known_args()
 
     if unknownOptions:
         unknownOptionMessage = 'unrecognized arguments: %s' % ' '.join(unknownOptions)
+        usageMessage = argumentParser.format_usage()
+
         logger.warning(unknownOptionMessage)
-        logger.warning(argumentParser.format_usage())
+        logger.warning(usageMessage)
+
+        # Also print usage error messages so they will appear in email to sysadmins, sent from crond
         print(unknownOptionMessage)
-        print(argumentParser.format_usage())
+        print(usageMessage)
 
     logger.info('{} email to instructors with logs after courses are processed'
                 .format('Sending' if options.sendEmail else 'Not sending'))
@@ -463,6 +484,7 @@ def main():
 
     if options.sendEmail:
         emailCourseLogs(courseInstructorDictionary)
+        renameLogForCourseID(None)
 
 
 if __name__ == '__main__':
