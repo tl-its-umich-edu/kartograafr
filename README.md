@@ -1,17 +1,18 @@
 # kartograafr
 ArcGIS/Canvas data bridge
 
-## Name
-Questions are often asked about the name of this application.  **kartograafr** (*never capitalized*) is loosely based on the Dutch word "cartograaf", which means "cartographer" in English.  Some artistic license was taken to make the name more unique.  Since kartograafr is written in Python, a language created by a Dutch application developer (Guido van Rossum), it's only fitting.
+## About
+**_kartograafr_** : "kart-uh-GRAFF-fur", or in IPA: ['kɑr.toː.*ɣraːf.fər]
+The name is based on the Dutch word for cartographer, "cartograaf", and was changed a little to make it unique.  It is never capitalized.  Since kartograafr is written in Python, a programming language created by a Dutch computer programmer (Guido van Rossum), a Dutch-based name is only fitting.
 
 ## Purpose
 The kartograafr application...
 
 * searches for Canvas courses and their assignments which are associated with a specific Canvas outcome object,
 * creates or updates ArcGIS groups that contain the users of the Canvas courses it found,
-* reads part of its configuration from a page in a specific Canvas course used only for this purpose, 
+* reads part of its configuration (course IDs to be checked) from a page in a specific Canvas course used only for this purpose, 
 * can be easily updated by changing its configuration course page in Canvas,
-* allows support staff to update its configuration without requiring sysadmin access
+* allows support staff to update its configuration via Canvas without requiring server sysadmin access
  
  
 ## Setup and Installation
