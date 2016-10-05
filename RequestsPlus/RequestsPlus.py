@@ -11,7 +11,6 @@ HTTP_HEADER_CONTENT_TYPE = 'Content-type'
 
 
 class RequestsPlus(util.UtilMixin, object):
-
     def __init__(self, apiBaseURL, contentType=MIME_TYPE_JSON, authZToken=None, authZType=AUTHZ_TYPE_BEARER):
         self._name = self.__class__.__name__
         self.apiBaseURL = apiBaseURL
@@ -123,7 +122,13 @@ class RequestsPlus(util.UtilMixin, object):
         :rtype: requests.Response
         """
 
-        return self._sendRequest(self.methodName(), apiQueryURI, **kwargs)
+        response = self._sendRequest(self.methodName(), apiQueryURI, **kwargs)
+
+        if not response.ok:
+            raise RuntimeError('Error {response.status_code} "{response.reason}" for request: {apiQueryURI}'
+                               .format(**locals()))
+
+        return response
 
     def getAllResponsePages(self, response):
         """
