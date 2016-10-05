@@ -9,6 +9,8 @@ class CanvasAPI(RequestsPlus):
         SEARCH_ALL_COURSES = '/search/all_courses'
         OUTCOMES = '/outcomes/{outcomeID}'  #: Get a single Outcome by ID
         COURSES_ASSIGNMENTS = '/courses/{courseID}/assignments'
+        COURSES_USERS = '/courses/{courseID}/users'
+        COURSES_PAGES_BY_NAME = '/courses/{courseID}/pages/{pageName}'
 
     def __init__(self, apiBaseURL, contentType=MIME_TYPE_JSON, authZToken=None, authZType=AUTHZ_TYPE_BEARER):
         """
@@ -151,3 +153,139 @@ class CanvasAPI(RequestsPlus):
                 .jsonObjects(object_hook=self.jsonObjectHook)
 
         return coursesAssignments
+
+    def getCoursesUsers(self, courseID, enrollmentType=None, **kwargs):
+        """
+        Get Canvas Users objects as requests Response object.  May be one of multiple pages.
+
+        :param courseID: ID number of the Canvas course object's User Objects to be retrieved
+        :type courseID: int
+        :param enrollmentType:
+        :type enrollmentType: str
+        :return:
+        :rtype: requests.models.Response
+        """
+        assert type(courseID) is int
+
+        if enrollmentType:
+            if not isinstance(enrollmentType, str):
+                raise TypeError('enrollmentType must be string')
+            if 'enrollment_type' not in kwargs:
+                kwargs['enrollment_type'] = str(enrollmentType)
+
+        queryURI = self._QueryURIs.COURSES_USERS.format(courseID=courseID)
+        response = self.get(queryURI, params=kwargs)
+
+        return response
+
+    def getCoursesUsersObjects(self, courseID, enrollmentType=None, **kwargs):
+        """
+        Get Canvas User objects as CanvasObjects parsed from JSON
+
+        :param courseID: ID number of the Canvas Course object to find User objects
+        :type courseID: int
+        :param enrollmentType:
+        :type enrollmentType: str
+        :return: An object representing the Canvas Users contained
+            in the API response, otherwise :class:`None<None>`
+        :rtype: CanvasObject
+        """
+        assert type(courseID) is int
+
+        coursesUsers = None
+        response = self.getCoursesUsers(courseID, enrollmentType=enrollmentType, **kwargs)
+        if response.ok:
+            coursesUsers = self.responseCollection(response).collectAllResponsePages() \
+                .jsonObjects(object_hook=self.jsonObjectHook)
+
+        return coursesUsers
+
+    def getCoursesPagesByName(self, courseID, pageName, **kwargs):
+        """
+        Get Canvas Users objects as requests Response object.  May be one of multiple pages.
+
+        :param courseID: ID number of the Canvas course object's User Objects to be retrieved
+        :type courseID: int
+        :param enrollmentType:
+        :type enrollmentType: str
+        :return:
+        :rtype: requests.models.Response
+        """
+        assert isinstance(courseID, int)
+        assert isinstance(pageName, str)
+
+        queryURI = self._QueryURIs.COURSES_PAGES_BY_NAME.format(courseID=courseID, pageName=pageName)
+        response = self.get(queryURI, params=kwargs)
+
+        return response
+
+    def getCoursesPagesByNameObjects(self, courseID, pageName, **kwargs):
+        """
+        Get Canvas User objects as CanvasObjects parsed from JSON
+
+        :param courseID: ID number of the Canvas Course object to find User objects
+        :type courseID: int
+        :param enrollmentType:
+        :type enrollmentType: str
+        :return: An object representing the Canvas Users contained
+            in the API response, otherwise :class:`None<None>`
+        :rtype: CanvasObject
+        """
+        assert isinstance(courseID, int)
+        assert isinstance(pageName, str)
+
+        coursesPages = None
+        response = self.getCoursesPagesByName(courseID, pageName, **kwargs)
+        if response.ok:
+            coursesPages = self.responseCollection(response).collectAllResponsePages() \
+                .jsonObjects(object_hook=self.jsonObjectHook)
+
+        return coursesPages
+
+    def getCourse(self, courseID):
+        """
+        Get Canvas Courses object as requests Response object.
+
+        :param courseID: ID number of the Canvas course object to be retrieved
+        :type courseID: int
+        :return:
+        :rtype: requests.models.Response
+        """
+        assert type(courseID) is int
+
+        queryURI = self._QueryURIs.COURSES.format(courseID=courseID)
+        response = self.get(queryURI)
+
+        return response
+
+    def getCourseObject(self, courseID):
+        """
+        Get Canvas Course object as CanvasObject parsed from JSON
+
+        :param courseID: ID number of the Canvas Course object to find User objects
+        :type courseID: int
+        :return: An object representing the Canvas Users contained
+            in the API response, otherwise :class:`None<None>`
+        :rtype: CanvasObject
+        """
+        assert type(courseID) is int
+
+        course = None
+        response = self.getCourse(courseID)
+        if response.ok:
+            courseObjects = self.responseCollection(response) \
+                .jsonObjects(object_hook=self.jsonObjectHook)
+
+            courseCount = len(courseObjects)
+
+            if courseCount == 0:
+                print 'log: successful response, but no outcome returned for ID: {}.' \
+                    .format(courseID)
+            else:
+                if courseCount > 1:
+                    print 'log: successful response, but {} outcomes returned for ID: {}.' \
+                        .format(courseCount, courseID)
+
+                course = courseObjects.pop()
+
+        return course

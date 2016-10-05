@@ -11,6 +11,7 @@ HTTP_HEADER_CONTENT_TYPE = 'Content-type'
 
 
 class RequestsPlus(util.UtilMixin, object):
+
     def __init__(self, apiBaseURL, contentType=MIME_TYPE_JSON, authZToken=None, authZType=AUTHZ_TYPE_BEARER):
         self._name = self.__class__.__name__
         self.apiBaseURL = apiBaseURL

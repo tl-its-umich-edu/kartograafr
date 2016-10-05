@@ -1,7 +1,7 @@
 """
-Set up the kartograafr environment for use in an interactive interpreter.
-Intended to be called from developers' ~/.pythonrc files.
+Set up the environment to use kartograafr in an interactive interpreter.
 """
+# Intended to be called from developers' ~/.pythonrc files.
 
 from main import *
 
