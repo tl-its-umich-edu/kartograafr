@@ -2,7 +2,8 @@
 ArcGIS/Canvas data bridge
 
 ## About
-**_kartograafr_** : "kart-uh-GRAFF-fur", or in IPA: ['kɑr.toː.*ɣraːf.fər]
+**_kartograafr_** — "kart-uh-GRAFF-fur", or in IPA: ['kɑr.toː.*ɣraːf.fər]
+
 The name is based on the Dutch word for cartographer, "cartograaf", and was changed a little to make it unique.  It is never capitalized.  Since kartograafr is written in Python, a programming language created by a Dutch computer programmer (Guido van Rossum), a Dutch-based name is only fitting.
 
 ## Purpose
