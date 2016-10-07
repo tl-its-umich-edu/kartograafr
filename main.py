@@ -184,7 +184,7 @@ def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, cour
                                    .format(groupNameAndID, usersNotRemoved))
         else:
             logger.info('Creating ArcGIS group: "{}"'.format(groupTitle))
-            instructorLog += 'Creating ArcGIS group: "{}"\n'.format(group.title)
+            instructorLog += 'Creating ArcGIS group: "{}"\n'.format(groupTitle)
 
             with util.CaptureStdoutLines() as output:
                 try:
