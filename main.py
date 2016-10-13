@@ -81,8 +81,12 @@ def getCourseAssignmentsWithOutcome(canvas, courseIDs, outcome):
             expirationTimestamp = assignment.lock_at or assignment.due_at
             expirationTime = dateutil.parser.parse(expirationTimestamp) if expirationTimestamp else RUN_START_TIME
             if (expirationTime < RUN_START_TIME):
-                logger.info('Skipping Assignment {}, expired on: {}'.format(assignment,
-                                                                            assignment.lock_at if assignment.lock_at else assignment.due_at))
+                logger.info('Skipping Assignment {}, expired on: {}'
+                            .format(assignment,
+                                    assignment.lock_at if assignment.lock_at else assignment.due_at))
+                continue
+            if not assignment.rubric:
+                logger.info('Skipping Assignment {}, no rubrics'.format(assignment))
                 continue
             for rubric in assignment.rubric:
                 if rubric.outcome_id == outcome.id:
