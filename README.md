@@ -10,7 +10,7 @@ The name is based on the Dutch word for cartographer, "cartograaf", and was chan
 The kartograafr application...
 
 * searches for Canvas courses and their assignments which are associated with a specific Canvas outcome object,
-* creates or updates ArcGIS groups that contain the users of the Canvas courses it found,
+* creates or updates ArcGIS groups that contain the users of the Canvas course assignments it found,
 * reads part of its configuration (course IDs to be checked) from a page in a specific Canvas course used only for this purpose, 
 * can be easily updated by changing its configuration course page in Canvas,
 * allows support staff to update its configuration via Canvas without requiring server sysadmin access
