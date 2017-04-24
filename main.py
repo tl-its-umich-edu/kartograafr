@@ -209,7 +209,7 @@ def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, cour
 
         groupNameAndID = util.formatNameAndID(group)
 
-        courseUsers = [user.login_id for user in courseUserDictionary[course.id]]
+        courseUsers = [user.login_id for user in courseUserDictionary[course.id] if (user.login_id is not None)]
         logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
 
         # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name, separated by an underscore
