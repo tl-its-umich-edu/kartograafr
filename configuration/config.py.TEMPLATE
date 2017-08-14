@@ -4,22 +4,28 @@ import os
 class Application(object):
     class Email(object):
         SMTP_SERVER = '127.0.0.1'
-        SENDER_ADDRESS = '"ArcGIS-Canvas Service" <kartograafr-service@umich.edu>'
+        SENDER_ADDRESS = '"ArcGIS-Canvas Service Dev" <kartograafr-service-dev@umich.edu>'
         RECIPIENT_AT_DOMAIN = '@umich.edu'
-        SUBJECT = 'ArcGIS-Canvas logs for course ID {courseID}'
+        SUBJECT = 'ArcGIS-Canvas logs for course ID {courseID} (Dev)'
 
 
+    # directory path for logging may depend on the platform.  /private/.... may be on osx
+    # also '/tmp/log'
     class Logging(object):
         MAIN_LOGGER_NAME = 'kartograafr'
-        DIRECTORY = '/tmp/log'
+        DIRECTORY = '/var/log/kartograafr'
         COURSE_DIRECTORY = os.path.join(DIRECTORY, 'courses')
         MAIN_LOG_BASENAME = 'main'
         LOG_FILENAME_EXTENSION = '.log'
 
-
+        #        DIRECTORY = '/tmp/log'
+        #        DIRECTORY = '/var/log/kartograafr'
+        
 class Canvas(object):
     API_BASE_URL = 'https://umich.instructure.com/api/v1/'
-    API_AUTHZ_TOKEN = ''  # Token goes here
+
+    API_AUTHZ_TOKEN = 'SOME_COOL_LONG_CANVAS_TOKEN'
+
     ACCOUNT_ID = 306  # Test Account
     TARGET_OUTCOME_ID = 2501  # ArcGIS Mapping Skills
     CONFIG_COURSE_ID = 138596
