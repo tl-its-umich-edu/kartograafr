@@ -46,3 +46,16 @@ The kartograafr application...
 1. Set up the cron jobs
     1. Copy `rootdir_etc_cron.d/kartograafr` from the installation directory to `/etc/cron.d/kartograafr`
     1. Edit `/etc/cron.d/kartograafr` to use the desired schedule and correct sysadmin email address for errors
+    
+    
+## Development and Debugging
+  To handle email you can use the debugging smtpd provided with python via the command:
+  
+<code>
+    python -m smtpd -n -c DebuggingServer localhost:1025
+</code>
+
+## Docker
+A Dockerfile is provided for local development. It assumes that the
+code has been checked out already.  The log goes to a
+disk file instead of stdout.

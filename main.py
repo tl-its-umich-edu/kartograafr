@@ -421,6 +421,8 @@ def emailLogForCourseID(courseID, recipients):
 
     try:
         server = smtplib.SMTP(config.Application.Email.SMTP_SERVER)
+        logger.debug("mail server: "+config.Application.Email.SMTP_SERVER)
+        server.set_debuglevel(True)
         server.sendmail(config.Application.Email.SENDER_ADDRESS, recipients, message.as_string())
         server.quit()
         logger.info('Email sent to {recipients} for course {courseID}'.format(**locals()))

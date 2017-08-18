@@ -11,6 +11,7 @@ HOST_LOG=${PWD}/tmp/log
 CONTAINER_CONFIG=/usr/local/apps/kartograafer/configuration
 CONTAINER_LOG=/var/log/kartograafr
 
+#mkdir -p -v ${HOST_LOG}/kartograafr/courses
 ## Construct mapping text.
 V_CONFIG=" -v ${HOST_CONFIG}:${CONTAINER_CONFIG} "
 V_LOG=" -v ${HOST_LOG}:${CONTAINER_LOG} "
@@ -20,4 +21,7 @@ V_LOG=" -v ${HOST_LOG}:${CONTAINER_LOG} "
 
 docker build -t $TAG . \
     && docker run -it ${NET} ${V_LOG} ${V_CONFIG} --rm --name ${TAG}-run ${TAG}
+
+echo "log directory: "
+ls -l ${HOST_LOG}
 #end
