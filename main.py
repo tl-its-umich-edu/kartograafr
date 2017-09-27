@@ -359,7 +359,7 @@ def closeAllCourseLogHandlers():
 
 def getCourseIDsFromConfigCoursePage(canvas, courseID, pageName):
     VALID_COURSE_URL_REGEX = '^https://umich\.instructure\.com/courses/[0-9]+$'
-    pages = canvas.getCoursesPagesByNameObjects(138596, 'course-ids')  # type: list of CanvasObject
+    pages = canvas.getCoursesPagesByNameObjects(courseID, 'course-ids')  # type: list of CanvasObject
     courseIDs = None
 
     if pages:
