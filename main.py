@@ -81,12 +81,15 @@ def getCourseAssignmentsWithOutcome(canvas, courseIDs, outcome):
             expirationTimestamp = assignment.lock_at or assignment.due_at
             expirationTime = dateutil.parser.parse(expirationTimestamp) if expirationTimestamp else RUN_START_TIME
             if (expirationTime < RUN_START_TIME):
-                logger.info('Skipping Assignment {}, expired on: {}'
+                logger.info('Skipping Assignment {} for Course {}, expired on: {}'
                             .format(assignment,
+                                    courseID,
                                     assignment.lock_at if assignment.lock_at else assignment.due_at))
                 continue
             if not assignment.rubric:
-                logger.info('Skipping Assignment {}, no rubrics'.format(assignment))
+                logger.info('Skipping Assignment {} for Course {}, no rubrics'
+                            .format(assignment,
+                                    courseID))
                 continue
             for rubric in assignment.rubric:
                 if rubric.outcome_id == outcome.id:
@@ -359,7 +362,7 @@ def closeAllCourseLogHandlers():
 
 def getCourseIDsFromConfigCoursePage(canvas, courseID, pageName):
     VALID_COURSE_URL_REGEX = '^https://umich\.instructure\.com/courses/[0-9]+$'
-    pages = canvas.getCoursesPagesByNameObjects(138596, 'course-ids')  # type: list of CanvasObject
+    pages = canvas.getCoursesPagesByNameObjects(courseID, 'course-ids')  # type: list of CanvasObject
     courseIDs = None
 
     if pages:

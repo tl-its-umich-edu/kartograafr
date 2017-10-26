@@ -16,17 +16,17 @@ The kartograafr application...
 * allows support staff to update its configuration via Canvas without requiring server sysadmin access
  
  
-## Setup and Installation
+## For Administrators: Setup and Installation
 
 1. In Canvas:
     1. Make note of the Canvas API base URL
     1. Make note of the Canvas account ID number being used for the following items
     1. Prepare an API access token
-    1. Create an ArcGIS outcome and note its ID number
+    1. Create an outcome for ArcGIS and note its ID number
     1. Create a kartograafr configuration course and note its ID number
         1. Create a page named `course-ids`
         1. Add to the page the URLs of courses to be processed (they will appear as links on the page)
-        1. Give support staff the permissions necessary to update that page
+        1. Give support staff the permissions necessary to update that page (add them with the "Teacher" role)
 1. In ArcGIS:
     1. Make note of the organization name being used (e.g., `devumich` or `umich`)
     1. Create a user with permission to create and modify user groups, make note of the username and password
@@ -46,3 +46,31 @@ The kartograafr application...
 1. Set up the cron jobs
     1. Copy `rootdir_etc_cron.d/kartograafr` from the installation directory to `/etc/cron.d/kartograafr`
     1. Edit `/etc/cron.d/kartograafr` to use the desired schedule and correct sysadmin email address for errors
+
+## For Instructors: Designate Course and Assignments To Be Synchronized
+
+1. Email `4-HELP@umich.edu` to request that your course be added to the list of courses on the "kartograafr: Canvas/ArcGIS Integration" configuration page.  This will only need to be requested once for each of your courses.  You may proceed to the next step while you wait for this request to be fulfilled.
+1. Add the "ArcGIS Group" outcome to your course.  This will only need to be done once for each of your courses.
+    1. On your course's home page, click the "Outcomes" navigation item.
+    1. On your course's Outcome page, click the "🔍 Find" button.  (Note: **_DO NOT_** click the "+ Outcome" button.)
+    1. In the dialog box that appears, select the following list items, in order:
+        1. "Account Standards"
+        1. "University of Michigan - Ann Arbor"
+        1. "ArcGIS"
+        1. "ArcGIS Group".  (Note: Only click the "ArcGIS Group" item in the list immediately to the right of the "ArcGIS" item.  **_DO NOT_** click on the larger "ArcGIS Group" link that appears in the wider space in the rightmost part of the dialog box.)
+    1. At the bottom right corner of the dialog box, click the "Import" button.
+    1. In the alert box with the message "Import outcome 'ArcGIS Group' to group '_your course name here_'?", click the "OK" button.
+    1. After the import is complete, you will see "ArcGIS Group" in your course's list of outcomes.
+1. Each of your course's assignments which are to be synchronized with ArcGIS Online needs to include the "ArcGIS Group" outcome in their rubrics.  **_You will need to do this for each new assignment you add to the course._**  
+    
+    This can be simplified somewhat by adding the "ArcGIS Group" outcome to a single rubric that will be used by multiple assignments.  Each assignment that uses that rubric will automatically include the "ArcGIS Group" outcome.  It's recommended that rubrics should be given meaningful names.  For example, a good name could be "_your course name here_ Rubric (with ArcGIS sync)".
+    1. Click on the name of an assignment in the list of your course's assignments.
+    1. Edit the assignment's rubric (or add a new rubric if one doesn't already exist).
+    1. Click on "🔍 Find Outcome".
+    1. In the dialog box of your course's outcomes that appears, click "ArcGIS Group" in the list on the left side of the box.  (Note: **_DO NOT_** click on the larger "ArcGIS Group" link that appears in the wider space to the right of the list.)
+    1. At the bottom right corner of the dialog box, click the "Import" button.
+    1. In the alert box with the message "Import outcome 'ArcGIS Group' to group '_your course name here_'?", click the "OK" button.
+    1. After the import is complete, you will see "ArcGIS Group" as part of the assignment's rubric.
+    1. Finally, click the "Update Rubric" button (or the "Create Rubric" button if you were adding a new rubric).
+1. Control the synchronization of your assignment with ArcGIS online by setting the "Available From", "Until", and "Due Date" times.
+1. Once all of the above requirements are satisfied, kartograafr will synchronize your course's assignments with ArcGIS Online.  It will happen automatically, several times each day.  You will receive email a few times each day showing the results of the synchronizations.
