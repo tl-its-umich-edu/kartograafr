@@ -1,15 +1,16 @@
+##### Run kartograafr in Docker.
+# TODO: - a couple of settings should be overrideable by environment variables.
+#       - This runs as root.  Cron may require further work if the root user is not allowed.
+
 FROM python:2.7
-
-#RUN apt-get update && apt-get install -y cron
-#COPY hello-cron /etc/cron.d/hello-cron
-#RUN crontab /etc/cron.d/hello-cron
-
-#CMD ["cron", "-f"]
 
 RUN apt-get update && apt-get install -y cron
 
-COPY hello-cron /etc/cron.d/hello-cron
-RUN crontab /etc/cron.d/hello-cron
+######### set timezone
+# TODO: allow overriding the time zone setting with an environment variable.
+ENV TZ=America/New_York
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+#########
 
 WORKDIR /usr/src/app
 
@@ -17,17 +18,15 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /usr/local/apps/kartograafr
-RUN mkdir -p -v  /var/log/kartograafr
+RUN mkdir -p -v /var/log/kartograafr
 RUN mkdir -p -v /var/log/kartograafr/courses
 
-#RUN ls -l /var/log/kartograafr/courses
-#RUN ls -l /var/log/kartograafr/courses/*
+# Add the cron entry for kartograafr
+## TODO: make the specific cron source file settable depending on environment variable.
+RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr.dev >> /etc/cron.d/kartograafr
+RUN crontab /etc/cron.d/kartograafr
 
-RUN find / -name cron -ls
+# Run cron.
 CMD ["cron", "-f"]
-# run without trying to mail logs.
-#CMD [ "python", "/usr/local/apps/kartograafr/main.py" ]
-##CMD [ "python", "/usr/local/apps/kartograafr/main.py","--mail"]
-##CMD ["bash"]
 
 #end
