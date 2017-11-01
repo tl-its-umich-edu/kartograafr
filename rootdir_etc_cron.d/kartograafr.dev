@@ -1,0 +1,9 @@
+# This file should be installed on the server as:
+
+* * * * *   echo "Hello $(date)" >>/var/log/cron.log 2>&1
+
+*/5 * * * * /usr/local/apps/kartograafr/startup.sh --GARBAGE --mail >> /var/log/kart.log
+#*/5 * * * * /usr/bin/python /usr/local/apps/kartograafr/main.py >> /var/log/kart.log
+##0 */5 * * * root /usr/bin/python /usr/local/apps/kartograafr/main.py
+
+#0 8,15 * * * root /usr/bin/python /usr/local/apps/kartograafr/main.py --mail
