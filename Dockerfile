@@ -1,6 +1,7 @@
 ##### Run kartograafr in Docker.
-# TODO: - a couple of settings should be overrideable by environment variables.
-#       - This runs as root.  Cron may require further work if the root user is not allowed.
+### TTD (Things To Do)
+# - a couple of settings should be overrideable by environment variables.  See TODOs below.
+# - This runs as root.  Cron may require further work if the root user is not allowed.
 
 FROM python:2.7
 
