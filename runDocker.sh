@@ -21,7 +21,7 @@ V_LOG=" -v ${HOST_LOG}:${CONTAINER_LOG} "
 ####
 
 docker build -t $TAG . \
-    && docker run -it ${V_LOG} ${V_CONFIG} --rm --name ${TAG}-run ${TAG}
+    && docker run -it ${V_LOG} ${V_CONFIG} --rm --name ${TAG}-run ${TAG} 2>&1
 
 echo "log directory: "
 ls -l ${HOST_LOG}

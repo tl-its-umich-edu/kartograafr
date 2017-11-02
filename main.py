@@ -3,6 +3,7 @@ from __future__ import print_function
 import argparse
 import datetime
 import logging
+import sys
 import os
 import re
 
@@ -286,6 +287,25 @@ def getMainLogFilePath(nameSuffix=None):
     )))
 
 
+# root = logging.getLogger()
+# root.setLevel(logging.DEBUG)
+# 
+# ch = logging.StreamHandler(sys.stdout)
+# ch.setLevel(logging.DEBUG)
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# ch.setFormatter(formatter)
+# root.addHandler(ch)
+
+def logToStdOut():
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+ 
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
+
 def getCourseLogger(courseID, courseName):
     """
     :param courseID: ID number of the course
@@ -467,6 +487,8 @@ def main():
     logger = logging.getLogger(config.Application.Logging.MAIN_LOGGER_NAME)  # type: logging.Logger
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logHandler)
+    
+    logToStdOut()
 
     argumentParser = argparse.ArgumentParser()
     argumentParser.add_argument('--mail', '--email', dest='sendEmail',

@@ -3,7 +3,7 @@
 # - a couple of settings should be overrideable by environment variables.  See TODOs below.
 # - This runs as root.  Cron may require further work if the root user is not allowed.
 
-FROM python:2.7
+FROM docker.io/python:2.7
 
 RUN apt-get update && apt-get install -y cron
 
