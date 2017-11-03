@@ -87,3 +87,17 @@ disk file instead of stdout.
     1. Finally, click the "Update Rubric" button (or the "Create Rubric" button if you were adding a new rubric).
 1. Control the synchronization of your assignment with ArcGIS online by setting the "Available From", "Until", and "Due Date" times.
 1. Once all of the above requirements are satisfied, kartograafr will synchronize your course's assignments with ArcGIS Online.  It will happen automatically, several times each day.  You will receive email a few times each day showing the results of the synchronizations.
+
+======= OpenShift NOTES
+
+Secure / secret values can not be kept in source control and need to
+be supplied to the system in a separate directory in the file
+*secrets.py*.  This file will NOT be in source control.  The file
+secrets.py.TEMPLATE will be in source control.  It should be copied to
+secrets.py and updated as required for a particular installation.  The
+path to the "secrets" directory needs to be added to PYTHONPATH.
+
+On OpenShift secrets.py will be supplied as an OpenShift secret.  The
+path to the mount directory needs to be added to the PYTHONPATH
+environmental variable.  The suggested mount point for the secrets
+file is '/opt/secrets'.

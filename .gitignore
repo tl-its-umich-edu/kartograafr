@@ -1,5 +1,8 @@
 *-.py
 
+/OPT
+secrets.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -89,3 +92,4 @@ ENV/
 
 # Rope project settings
 .ropeproject
+

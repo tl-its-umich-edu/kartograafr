@@ -16,8 +16,11 @@ from bs4 import BeautifulSoup
 from bs4.builder._htmlparser import HTMLParserTreeBuilder
 
 import config
-import util
+
 from CanvasAPI import CanvasAPI
+
+import secrets
+import util
 
 TIMEZONE_UTC = dateutil.tz.tzutc()
 RUN_START_TIME = datetime.datetime.now(tz=TIMEZONE_UTC)
@@ -27,7 +30,6 @@ logger = None  # type: logging.Logger
 logFormatter = None  # type: logging.Formatter
 courseLogHandlers = dict()
 courseLoggers = dict()
-
 
 def getCanvasInstance():
     return CanvasAPI(config.Canvas.API_BASE_URL,
@@ -286,16 +288,6 @@ def getMainLogFilePath(nameSuffix=None):
         mainLogName + config.Application.Logging.LOG_FILENAME_EXTENSION,
     )))
 
-
-# root = logging.getLogger()
-# root.setLevel(logging.DEBUG)
-# 
-# ch = logging.StreamHandler(sys.stdout)
-# ch.setLevel(logging.DEBUG)
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# ch.setFormatter(formatter)
-# root.addHandler(ch)
-
 def logToStdOut():
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
@@ -488,6 +480,7 @@ def main():
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logHandler)
     
+    # Add logging to stdout for OpenShift.
     logToStdOut()
 
     argumentParser = argparse.ArgumentParser()
