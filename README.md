@@ -14,7 +14,42 @@ The kartograafr application...
 * reads part of its configuration (course IDs to be checked) from a page in a specific Canvas course used only for this purpose, 
 * can be easily updated by changing its configuration course page in Canvas,
 * allows support staff to update its configuration via Canvas without requiring server sysadmin access
- 
+
+
+## Running in Docker and on Command line
+
+Two new scripts have been provided to make running kartograafr smoother.
+
+As of 11/2017 kartograafr is able to run in a Docker container.  The
+*runDocker.sh* script will configure and build a Docker container for
+kartograafr and will setup a Docker environment that allows running that
+container on OSX. When running on OpenShift that enviroment provides
+the build, deployment, and environmental services the application
+requires.
+
+A *startup.sh* script is now provided to invoke kartagraafr.  This
+script can be run from the OSX command line or in a Docker container.
+It automatically accounts for the environmental differences.  A
+startup script is exceedingly helpful for running the program under
+cron in Docker.  It's also very convenient in making it possible to
+run kartograafr from the command line during development without
+requiring running Docker.  One very important function of the startup
+script is to make the *secrets* directory with the secure connection
+information available to the application.
+
+## Secrets
+
+For OpenShift any secure or authentication information needs to be
+kept out of source control and be strictly separated from normal
+properties.  That information is now expected to be found in the
+*secrets.py* module which will be available in a seperate directory.
+A template for a secrets file is in the the configuration directory.
+That template shouldn't be modified but should be copied and that copy
+should be read from the separate secure directory.
+
+The template file illustrates how to easily implement an environmental variable
+override of the property value.  The code given is very likely not the
+best way to do this and is likely to be improved soon.
  
 ## For Administrators: Setup and Installation
 
@@ -88,16 +123,3 @@ disk file instead of stdout.
 1. Control the synchronization of your assignment with ArcGIS online by setting the "Available From", "Until", and "Due Date" times.
 1. Once all of the above requirements are satisfied, kartograafr will synchronize your course's assignments with ArcGIS Online.  It will happen automatically, several times each day.  You will receive email a few times each day showing the results of the synchronizations.
 
-======= OpenShift NOTES
-
-Secure / secret values can not be kept in source control and need to
-be supplied to the system in a separate directory in the file
-*secrets.py*.  This file will NOT be in source control.  The file
-secrets.py.TEMPLATE will be in source control.  It should be copied to
-secrets.py and updated as required for a particular installation.  The
-path to the "secrets" directory needs to be added to PYTHONPATH.
-
-On OpenShift secrets.py will be supplied as an OpenShift secret.  The
-path to the mount directory needs to be added to the PYTHONPATH
-environmental variable.  The suggested mount point for the secrets
-file is '/opt/secrets'.

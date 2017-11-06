@@ -3,10 +3,9 @@
 ## TEMP - Just ensure that cron is running 
 * * * * *   echo "Hello $(date)" >>/var/log/cron.log 2>&1
 
-### /proc works
-*/5 * * * * /usr/local/apps/kartograafr/startup.sh --GARBAGE --mail > /proc/1/fd/1 2>&1
+### run periodically, (but run much less often when live)
+### redirect is to be able to send logging to stdout
+*/5 * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
 
-# sample from CK
-#* * * * *	python /app/give-message.py > /proc/1/fd/1 2>&1
 #end
 
