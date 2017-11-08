@@ -3,6 +3,16 @@
 # Typically will put one file in the source directory.
 
 #set -x
+
+# if not arguments then print help
+if [ $# -eq 0 ]; then
+    echo "$0: <SECRET_NAME> <DIRECTORY> "
+    echo "Upload secrets to current OS project."
+    echo "Must supply name that OS will use as the volume name "
+    echo "and the path to the directory containing the secrets file(s)."
+    exit 1
+fi
+
 set -u
 
 ######## set the arguments

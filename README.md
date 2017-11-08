@@ -50,7 +50,13 @@ should be read from the separate secure directory.
 The template file illustrates how to easily implement an environmental variable
 override of the property value.  The code given is very likely not the
 best way to do this and is likely to be improved soon.
- 
+
+Rather than creating / modifying OpenShift secrets by hand the script
+*os-updateSecret.sh* can be used to update or create a secret.  It
+will upload the contents of a directory to a special volume available
+to the application in OpenShift. Note that the application will need
+to be redeployed to pick up any changes in the values of the secrets.
+
 ## For Administrators: Setup and Installation
 
 1. In Canvas:
