@@ -121,128 +121,141 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
 
     return None
 
+# TODO: Compute the lists of members to add / remove from ArcGIS site. (need lists of current canvas and current arggis members)
 
+# Add canvas course users to ArcGIS group with _umich added
+# TODO: will want to add only new users to group
+def addCanvasUsersToGroup(courseUserDictionary, logger, course, instructorLog, group, groupNameAndID, results):
+    groupNameAndID = util.formatNameAndID(group)
+    courseUsers = [user.login_id for user in courseUserDictionary[course.id] if user.login_id is not None]
+    logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
+# ArcGIS usernames are U-M uniqnames with the ArcGIS organization name, separated by an underscore
+    arcGISUsers = [user + '_' + config.ArcGIS.ORG_NAME for user in courseUsers]
+    results = group.addUsersToGroups(users=','.join(arcGISUsers))
+    usersNotAdded = results.get('notAdded')
+    """:type usersNotAdded: list"""
+    usersCount = len(arcGISUsers)
+    usersCount -= len(usersNotAdded) if usersNotAdded else 0
+    instructorLog += 'Number of users in group: {}\n\n'.format(usersCount)
+    if usersNotAdded:
+        logger.warning('Warning: Some or all users not added to ArcGIS group {}: {}'.format(groupNameAndID, usersNotAdded))
+        instructorLog += 'Users not in group (these users need ArcGIS accounts created for them):\n' + '\n'.join(map(lambda userNotAdded:'* ' + userNotAdded, usersNotAdded)) + '\n\n' + 'ArcGIS group ID number:\n{}\n\n'.format(group.id)
+    instructorLog += '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n'
+    courseLogger = getCourseLogger(course.id, course.name)
+    courseLogger.info(instructorLog)
+
+
+# get members of current ArcGIS group
+def getCurrentArcGISMembers(logger, group, groupNameAndID):
+    groupAllMembers = {}
+    with util.CaptureStdoutLines() as output:
+        try:
+            groupAllMembers = group.groupUsers()
+        except Exception as exception:
+            logger.info('Exception while getting users for ArcGIS group "{}": {}'.format(groupNameAndID, exception))
+    if output:
+        logger.info('Unexpected output while getting users for ArcGIS group "{}": {}'.format(groupNameAndID, output))
+    groupUsers = groupAllMembers.get('users')
+    """:type groupUsers: list"""
+    #return groupUsers, output, exception
+    return groupUsers
+
+# Remove users (in ArcGIS name format), from ArcGIS group
+
+def removeListOfUsersFromArcGISGroup(logger, group, groupNameAndID, groupUsers):
+
+    #logger.info('ArcGIS Users to be removed from ArcGIS Group {} ',format(groupNameAndID, ','.join(groupUsers)))
+    logger.info('ArcGIS Users to be removed from ArcGIS Group {} ',"PROBLEM PRINTING GROUPUSERS")
+    results = None
+    with util.CaptureStdoutLines() as output:
+        try:
+            results = group.removeUsersFromGroup(','.join(groupUsers))
+        except Exception as exception:
+            logger.info('Exception while removing users from ArcGIS group "{}": {}'.format(groupNameAndID, exception))
+    if output:
+        logger.info('Unexpected output while removing users from ArcGIS group "{}": {}'.format(groupNameAndID, output))
+    usersNotRemoved = results.get('notRemoved')
+    """:type usersNotRemoved: list"""
+    if usersNotRemoved:
+        logger.warning('Warning: Some or all users not removed from ArcGIS group {}: {}'.format(groupNameAndID, usersNotRemoved))
+    #return output, exception, results
+    return results
+
+# get list of ArcGIS users from group and then call method to remove them.
+# TODO: Will want to remove specific, not all, users in the future
+def removeExistingGroupMembers(logger, groupTitle, group,instructorLog):
+    groupNameAndID = util.formatNameAndID(group)
+    logger.info('Found ArcGIS group: {}'.format(groupNameAndID))
+    instructorLog += 'Updating ArcGIS group: "{}"\n'.format(groupTitle)
+    
+    groupUsers= getCurrentArcGISMembers(logger, group, groupNameAndID)
+    
+    if not groupUsers:
+        logger.info('Existing ArcGIS group {} does not have users to remove.'.format(groupNameAndID))
+    else:
+        results = removeListOfUsersFromArcGISGroup(logger, group, groupNameAndID, groupUsers)
+        
+    return instructorLog, groupNameAndID, results
+
+
+# Create a new ArcGIS group
+def createNewArcGISGroup(arcGIS, logger, groupTags, groupTitle,instructorLog):
+    logger.info('Creating ArcGIS group: "{}"'.format(groupTitle))
+    instructorLog += 'Creating ArcGIS group: "{}"\n'.format(groupTitle)
+    with util.CaptureStdoutLines() as output:
+        try:
+            arcGISOrgTools = orgtools.orgtools(arcGIS)
+            group = arcGISOrgTools.createGroup(groupTitle, groupTags)
+        except Exception as exception:
+            logger.info('Exception while creating ArcGIS group "{}": {}'.format(groupTitle, exception))
+    if output:
+        logger.info('Unexpected output while creating ArcGIS group "{}": {}'.format(groupTitle, output))
+    return group, instructorLog
+
+# Get ArcGIS group with this title (if it exists)
+def lookForExistingArcGISGroup(arcGIS, logger, groupTitle):
+    logger.info('Searching for existing ArcGIS group "{}"'.format(groupTitle))
+    with util.CaptureStdoutLines() as output:
+        try:
+            arcGISAdmin = arcrest.manageorg.Administration(securityHandler=arcGIS.securityhandler)
+            group = getArcGISGroupByTitle(arcGISAdmin, groupTitle)
+        except Exception as exception:
+            logger.exception('Exception while searching for ArcGIS group "{}": {}'.format(groupTitle, exception))
+    if output:
+        logger.info('Unexpected output while searching for ArcGIS group "{}": {}'.format(groupTitle, output))
+    return group
+
+
+# For this course and assignment make sure there is an existing (or new) group or create new group with no members
+# and add the canvas course members to it.
+def updateGroupForCourse(arcGIS, courseUserDictionary, logger, groupTags, assignment, course,instructorLog):
+    
+    instructorLog = ''
+    groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
+    group = None
+    group = lookForExistingArcGISGroup(arcGIS, logger, groupTitle)
+    
+    if group is not None:
+        instructorLog, groupNameAndID, results = removeExistingGroupMembers(logger, groupTitle, group,instructorLog)
+    else:
+        group, instructorLog = createNewArcGISGroup(arcGIS, logger, groupTags, groupTitle,instructorLog)
+        
+    if group is None:
+        logger.info('Problem creating or updating ArcGIS group "{}": No errors, exceptions, or group object.'.format(groupTitle))
+        instructorLog += 'Problem creating or updating ArcGIS group "{}"\n'.format(groupTitle)
+    else:
+        #continue
+        addCanvasUsersToGroup(courseUserDictionary, logger, course, instructorLog, group, groupNameAndID, results)
+
+# For all the assignments and their courses update the ArcGIS group.
 def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, courseUserDictionary):
     global logger  # type: logging.Logger
     groupTags = ','.join(('kartograafr', 'umich'))
 
     for assignment in assignments:
         course = courseDictionary[assignment.course_id]
-
         instructorLog = ''
-
-        groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
-        group = None
-
-        logger.info('Searching for existing ArcGIS group "{}"'.format(groupTitle))
-
-        with util.CaptureStdoutLines() as output:
-            try:
-                arcGISAdmin = arcrest.manageorg.Administration(securityHandler=arcGIS.securityhandler)
-                group = getArcGISGroupByTitle(arcGISAdmin, groupTitle)
-            except Exception as exception:
-                logger.exception(
-                    'Exception while searching for ArcGIS group "{}": {}'.format(groupTitle, exception))
-
-        if output:
-            logger.info('Unexpected output while searching for ArcGIS group "{}": {}'
-                        .format(groupTitle, output))
-
-        if group is not None:
-            groupNameAndID = util.formatNameAndID(group)
-            logger.info('Found ArcGIS group: {}'.format(groupNameAndID))
-            instructorLog += 'Updating ArcGIS group: "{}"\n'.format(groupTitle)
-
-            groupAllMembers = {}
-            with util.CaptureStdoutLines() as output:
-                try:
-                    groupAllMembers = group.groupUsers()
-                except Exception as exception:
-                    logger.info(
-                        'Exception while getting users for ArcGIS group "{}": {}'.format(groupNameAndID, exception))
-
-            if output:
-                logger.info('Unexpected output while getting users for ArcGIS group "{}": {}'
-                            .format(groupNameAndID, output))
-
-            groupUsers = groupAllMembers.get('users')
-            """:type groupUsers: list"""
-
-            if not groupUsers:
-                logger.info('Existing ArcGIS group {} does not have users to remove.'.format(groupNameAndID))
-            else:
-                logger.info('ArcGIS Users to be removed from ArcGIS Group {} '
-                            'before reloading with all Canvas course users: {}'.format(groupNameAndID, groupUsers))
-
-                results = None
-                with util.CaptureStdoutLines() as output:
-                    try:
-                        results = group.removeUsersFromGroup(','.join(groupUsers))
-                    except Exception as exception:
-                        logger.info('Exception while removing users from ArcGIS group "{}": {}'
-                                    .format(groupNameAndID, exception))
-
-                if output:
-                    logger.info('Unexpected output while removing users from ArcGIS group "{}": {}'
-                                .format(groupNameAndID, output))
-
-                usersNotRemoved = results.get('notRemoved')
-                """:type usersNotRemoved: list"""
-
-                if usersNotRemoved:
-                    logger.warning('Warning: Some or all users not removed from ArcGIS group {}: {}'
-                                   .format(groupNameAndID, usersNotRemoved))
-        else:
-            logger.info('Creating ArcGIS group: "{}"'.format(groupTitle))
-            instructorLog += 'Creating ArcGIS group: "{}"\n'.format(groupTitle)
-
-            with util.CaptureStdoutLines() as output:
-                try:
-                    arcGISOrgTools = orgtools.orgtools(arcGIS)
-                    group = arcGISOrgTools.createGroup(groupTitle, groupTags)
-                except Exception as exception:
-                    logger.info('Exception while creating ArcGIS group "{}": {}'.format(groupTitle, exception))
-
-            if output:
-                logger.info('Unexpected output while creating ArcGIS group "{}": {}'
-                            .format(groupTitle, output))
-
-        if group is None:
-            logger.info('Problem creating or updating ArcGIS group "{}": No errors, exceptions, or group object.'
-                        .format(groupTitle))
-            instructorLog += 'Problem creating or updating ArcGIS group "{}"\n'.format(groupTitle)
-            continue
-
-        groupNameAndID = util.formatNameAndID(group)
-
-        courseUsers = [user.login_id for user in courseUserDictionary[course.id] if (user.login_id is not None)]
-        logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
-
-        # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name, separated by an underscore
-        arcGISUsers = [user + '_' + config.ArcGIS.ORG_NAME for user in courseUsers]
-
-        results = group.addUsersToGroups(users=','.join(arcGISUsers))
-
-        usersNotAdded = results.get('notAdded')
-        """:type usersNotAdded: list"""
-
-        usersCount = len(arcGISUsers)
-        usersCount -= len(usersNotAdded) if usersNotAdded else 0
-
-        instructorLog += 'Number of users in group: {}\n\n'.format(usersCount)
-
-        if usersNotAdded:
-            logger.warning('Warning: Some or all users not added to ArcGIS group {}: {}'
-                           .format(groupNameAndID, usersNotAdded))
-            instructorLog += 'Users not in group (these users need ArcGIS accounts created for them):\n' + \
-                             '\n'.join(map(lambda userNotAdded: '* ' + userNotAdded, usersNotAdded)) + \
-                             '\n\n' + \
-                             'ArcGIS group ID number:\n{}\n\n'.format(group.id)
-
-        instructorLog += '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n'
-
-        courseLogger = getCourseLogger(course.id, course.name)
-        courseLogger.info(instructorLog)
+        updateGroupForCourse(arcGIS, courseUserDictionary, logger, groupTags, assignment, course,instructorLog)
 
 
 def getCoursesByID(canvas, courseIDs):
