@@ -22,6 +22,14 @@ from CanvasAPI import CanvasAPI
 import secrets
 import util
 
+##### Improved tracebacks 
+import traceback
+
+def handleError(self, record):
+    traceback.print_stack()
+logging.Handler.handleError = handleError
+#####
+
 TIMEZONE_UTC = dateutil.tz.tzutc()
 RUN_START_TIME = datetime.datetime.now(tz=TIMEZONE_UTC)
 RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
@@ -121,20 +129,20 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
 
     return None
 
-# TODO: Compute the lists of members to add / remove from ArcGIS site. (need lists of current canvas and current arggis members)
-
 # Add canvas course users to ArcGIS group with _umich added
 # TODO: will want to add only new users to group
-def addCanvasUsersToGroup(courseUserDictionary, logger, course, instructorLog, group, groupNameAndID, results):
+# TODO: need list of members already in group
+
+def addCanvasUsersToGroup(logger, course, instructorLog, group,courseUsers):
     groupNameAndID = util.formatNameAndID(group)
-    courseUsers = [user.login_id for user in courseUserDictionary[course.id] if user.login_id is not None]
+
     logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
-# ArcGIS usernames are U-M uniqnames with the ArcGIS organization name, separated by an underscore
-    arcGISUsers = [user + '_' + config.ArcGIS.ORG_NAME for user in courseUsers]
-    results = group.addUsersToGroups(users=','.join(arcGISUsers))
+    # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name, separated by an underscore
+    arcGISFormatUsers = [user + '_' + config.ArcGIS.ORG_NAME for user in courseUsers]
+    results = group.addUsersToGroups(users=','.join(arcGISFormatUsers))
     usersNotAdded = results.get('notAdded')
     """:type usersNotAdded: list"""
-    usersCount = len(arcGISUsers)
+    usersCount = len(arcGISFormatUsers)
     usersCount -= len(usersNotAdded) if usersNotAdded else 0
     instructorLog += 'Number of users in group: {}\n\n'.format(usersCount)
     if usersNotAdded:
@@ -145,7 +153,7 @@ def addCanvasUsersToGroup(courseUserDictionary, logger, course, instructorLog, g
     courseLogger.info(instructorLog)
 
 
-# get members of current ArcGIS group
+# JUST: get members of current ArcGIS group 
 def getCurrentArcGISMembers(logger, group, groupNameAndID):
     groupAllMembers = {}
     with util.CaptureStdoutLines() as output:
@@ -161,11 +169,9 @@ def getCurrentArcGISMembers(logger, group, groupNameAndID):
     return groupUsers
 
 # Remove users (in ArcGIS name format), from ArcGIS group
-
 def removeListOfUsersFromArcGISGroup(logger, group, groupNameAndID, groupUsers):
 
-    #logger.info('ArcGIS Users to be removed from ArcGIS Group {} ',format(groupNameAndID, ','.join(groupUsers)))
-    logger.info('ArcGIS Users to be removed from ArcGIS Group {} ',"PROBLEM PRINTING GROUPUSERS")
+    logger.info('ArcGIS Users to be removed from ArcGIS Group [{}] [{}]'.format(groupNameAndID, ','.join(groupUsers)))
     results = None
     with util.CaptureStdoutLines() as output:
         try:
@@ -178,24 +184,23 @@ def removeListOfUsersFromArcGISGroup(logger, group, groupNameAndID, groupUsers):
     """:type usersNotRemoved: list"""
     if usersNotRemoved:
         logger.warning('Warning: Some or all users not removed from ArcGIS group {}: {}'.format(groupNameAndID, usersNotRemoved))
-    #return output, exception, results
+        
     return results
 
 # get list of ArcGIS users from group and then call method to remove them.
 # TODO: Will want to remove specific, not all, users in the future
-def removeExistingGroupMembers(logger, groupTitle, group,instructorLog):
+def removeExistingGroupMembers(logger, groupTitle, group,instructorLog,groupUsers):
+    results = ''
     groupNameAndID = util.formatNameAndID(group)
     logger.info('Found ArcGIS group: {}'.format(groupNameAndID))
     instructorLog += 'Updating ArcGIS group: "{}"\n'.format(groupTitle)
-    
-    groupUsers= getCurrentArcGISMembers(logger, group, groupNameAndID)
     
     if not groupUsers:
         logger.info('Existing ArcGIS group {} does not have users to remove.'.format(groupNameAndID))
     else:
         results = removeListOfUsersFromArcGISGroup(logger, group, groupNameAndID, groupUsers)
         
-    return instructorLog, groupNameAndID, results
+    return instructorLog, results
 
 
 # Create a new ArcGIS group
@@ -230,25 +235,62 @@ def lookForExistingArcGISGroup(arcGIS, logger, groupTitle):
 # and add the canvas course members to it.
 def updateGroupForCourse(arcGIS, courseUserDictionary, logger, groupTags, assignment, course,instructorLog):
     
-    instructorLog = ''
     groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
     group = None
     group = lookForExistingArcGISGroup(arcGIS, logger, groupTitle)
     
-    if group is not None:
-        instructorLog, groupNameAndID, results = removeExistingGroupMembers(logger, groupTitle, group,instructorLog)
-    else:
+    if group is None:
         group, instructorLog = createNewArcGISGroup(arcGIS, logger, groupTags, groupTitle,instructorLog)
         
     if group is None:
         logger.info('Problem creating or updating ArcGIS group "{}": No errors, exceptions, or group object.'.format(groupTitle))
         instructorLog += 'Problem creating or updating ArcGIS group "{}"\n'.format(groupTitle)
+        # TODO: return from here?
     else:
+        # want to pass in lists of users to remove and to add.
         #continue
-        addCanvasUsersToGroup(courseUserDictionary, logger, course, instructorLog, group, groupNameAndID, results)
+        #addCanvasUsersToGroup(courseUserDictionary, logger, course, instructorLog, group, groupNameAndID, results)
+        # remove members from group
+        # currently remove all users from group
+        
+        
+        # TODO: have method to make the two lists to pass down
+        
+                
+        groupNameAndID = util.formatNameAndID(group)
+        
+        groupUsers= getCurrentArcGISMembers(logger, group, groupNameAndID)
+        instructorLog, results = removeExistingGroupMembers(logger, groupTitle, group,instructorLog,groupUsers)
+        
+        # add the canvas members 
+        courseUsers = [user.login_id for user in courseUserDictionary[course.id] if user.login_id is not None]
+        addCanvasUsersToGroup(logger, course, instructorLog, group,courseUsers)
+
+# def updateGroupForCourse(arcGIS, courseUserDictionary, logger, groupTags, assignment, course,instructorLog):
+#     
+#     #instructorLog = ''
+#     groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
+#     group = None
+#     group = lookForExistingArcGISGroup(arcGIS, logger, groupTitle)
+#     
+#     if group is not None:
+#         groupNameAndID = util.formatNameAndID(group)
+#         groupUsers= getCurrentArcGISMembers(logger, group, groupNameAndID)
+#         instructorLog, results = removeExistingGroupMembers(logger, groupTitle, group,instructorLog,groupUsers)
+#     else:
+#         group, instructorLog = createNewArcGISGroup(arcGIS, logger, groupTags, groupTitle,instructorLog)
+#         
+#     if group is None:
+#         logger.info('Problem creating or updating ArcGIS group "{}": No errors, exceptions, or group object.'.format(groupTitle))
+#         instructorLog += 'Problem creating or updating ArcGIS group "{}"\n'.format(groupTitle)
+#     else:
+#         #continue
+#         #addCanvasUsersToGroup(courseUserDictionary, logger, course, instructorLog, group, groupNameAndID, results)
+#         addCanvasUsersToGroup(courseUserDictionary, logger, course, instructorLog, group)
+
 
 # For all the assignments and their courses update the ArcGIS group.
-def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, courseUserDictionary):
+def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary,courseUserDictionary):
     global logger  # type: logging.Logger
     groupTags = ','.join(('kartograafr', 'umich'))
 
@@ -261,6 +303,7 @@ def createArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary, cour
 def getCoursesByID(canvas, courseIDs):
     courses = {}
     for courseID in courseIDs:
+        logger.info("getCoursesById: courseId: {}".format(courseID))
         courses[courseID] = canvas.getCourseObject(courseID)
     return courses
 
