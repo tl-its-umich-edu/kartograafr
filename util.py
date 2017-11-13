@@ -56,6 +56,23 @@ def formatNameAndID(object):
     return '"{}" ({})'.format(object.title, object.id)
 
 
+def elideString(string):
+    """
+    Return version of string with the middle removed.  This allows identifying
+    information strings without revealing the whole string.
+    """
+
+    chunkSize = 3
+
+    # use fake value if string is too short to be safe
+    if len(string) < 9:
+        return "***"
+    
+    # keep the first and last chunks
+    string = string[0:chunkSize]+"..."+string[-chunkSize:]
+
+    return string
+
 class Iso8601UTCTimeFormatter(logging.Formatter):
     """
     A logging Formatter class giving timestamps in a more common ISO 8601 format.

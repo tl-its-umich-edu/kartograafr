@@ -14,8 +14,49 @@ The kartograafr application...
 * reads part of its configuration (course IDs to be checked) from a page in a specific Canvas course used only for this purpose, 
 * can be easily updated by changing its configuration course page in Canvas,
 * allows support staff to update its configuration via Canvas without requiring server sysadmin access
- 
- 
+
+
+## Running in Docker and on Command line
+
+Two new scripts have been provided to make running kartograafr smoother.
+
+As of 11/2017 kartograafr is able to run in a Docker container.  The
+*runDocker.sh* script will configure and build a Docker container for
+kartograafr and will setup a Docker environment that allows running that
+container on OSX. When running on OpenShift that enviroment provides
+the build, deployment, and environmental services the application
+requires.
+
+A *startup.sh* script is now provided to invoke kartagraafr.  This
+script can be run from the OSX command line or in a Docker container.
+It automatically accounts for the environmental differences.  A
+startup script is exceedingly helpful for running the program under
+cron in Docker.  It's also very convenient in making it possible to
+run kartograafr from the command line during development without
+requiring running Docker.  One very important function of the startup
+script is to make the *secrets* directory with the secure connection
+information available to the application.
+
+## Secrets
+
+For OpenShift any secure or authentication information needs to be
+kept out of source control and be strictly separated from normal
+properties.  That information is now expected to be found in the
+*secrets.py* module which will be available in a seperate directory.
+A template for a secrets file is in the the configuration directory.
+That template shouldn't be modified but should be copied and that copy
+should be read from the separate secure directory.
+
+The template file illustrates how to easily implement an environmental variable
+override of the property value.  The code given is very likely not the
+best way to do this and is likely to be improved soon.
+
+Rather than creating / modifying OpenShift secrets by hand the script
+*os-updateSecret.sh* can be used to update or create a secret.  It
+will upload the contents of a directory to a special volume available
+to the application in OpenShift. Note that the application will need
+to be redeployed to pick up any changes in the values of the secrets.
+
 ## For Administrators: Setup and Installation
 
 1. In Canvas:
@@ -46,6 +87,19 @@ The kartograafr application...
 1. Set up the cron jobs
     1. Copy `rootdir_etc_cron.d/kartograafr` from the installation directory to `/etc/cron.d/kartograafr`
     1. Edit `/etc/cron.d/kartograafr` to use the desired schedule and correct sysadmin email address for errors
+    
+    
+## Development and Debugging
+  To handle email you can use the debugging smtpd provided with python via the command:
+  
+<code>
+    python -m smtpd -n -c DebuggingServer localhost:1025
+</code>
+
+## Docker
+A Dockerfile is provided for local development. It assumes that the
+code has been checked out already.  The log goes to a
+disk file instead of stdout.
 
 ## For Instructors: Designate Course and Assignments To Be Synchronized
 
@@ -74,3 +128,4 @@ The kartograafr application...
     1. Finally, click the "Update Rubric" button (or the "Create Rubric" button if you were adding a new rubric).
 1. Control the synchronization of your assignment with ArcGIS online by setting the "Available From", "Until", and "Due Date" times.
 1. Once all of the above requirements are satisfied, kartograafr will synchronize your course's assignments with ArcGIS Online.  It will happen automatically, several times each day.  You will receive email a few times each day showing the results of the synchronizations.
+

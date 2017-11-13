@@ -1,0 +1,65 @@
+#!/bin/bash
+# Simple commands for managing local docker containers when only one container is running.
+
+# Make string matching case insensitive.
+shopt -s nocasematch
+CMD=$1
+
+#echo "CMD: [${CMD}]"
+
+# print help
+if [ $#  -ne 1 ]; then
+    echo "$0: Work with a single local docker container: commands: list, stop, bash"
+    echo "The behavior is undefined if there are multiple containers."
+    echo "list - list the container id."
+    echo "stop - run docker stop on that container."
+    echo "bash - open a bash shell on that container."
+    exit 1
+fi 
+
+function countContainers {
+    docker ps -q | wc -l >| docker.cnt.txt
+    echo -n "numberish of containers:"
+    cat docker.cnt.txt
+    }
+
+if [[ ${CMD} == "list" ]]
+then
+    #    docker ps -l
+    # get only id of the running containers
+    docker ps -q --filter status=running
+fi
+
+if [[ ${CMD} == "stop" ]]
+then
+    docker stop $(docker ps -l -q)
+fi
+
+if [[ ${CMD} == "kill" ]]
+then
+    docker kill $(docker ps -l -q)
+fi
+
+#open -a terminal --args cd ~/dev; pwd;
+
+if [[ ${CMD} == "bash" ]]
+then
+    docker exec -it  $(docker ps -l -q) /bin/bash
+fi
+
+if [[ ${CMD} == "count" ]]
+then
+    countContainers
+fi
+
+## open bash in a terminal window?
+#if [[ ${CMD} == "term-bash" ]]
+#then
+#    open -a terminal --args -e echo HOWDY
+    #    osascript -e 'tell application "Terminal" to do script "cd /tmp;pwd"'
+    # below doesn't exec $(pwd)
+    #osascript -e 'tell application "Terminal" to do script "cd $(pwd)"'g
+#    docker exec -it  $(docker ps -l -q) /bin/bash
+#fi
+
+#end

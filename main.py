@@ -3,6 +3,7 @@ from __future__ import print_function
 import argparse
 import datetime
 import logging
+import sys
 import os
 import re
 
@@ -15,8 +16,11 @@ from bs4 import BeautifulSoup
 from bs4.builder._htmlparser import HTMLParserTreeBuilder
 
 import config
-import util
+
 from CanvasAPI import CanvasAPI
+
+import secrets
+import util
 
 TIMEZONE_UTC = dateutil.tz.tzutc()
 RUN_START_TIME = datetime.datetime.now(tz=TIMEZONE_UTC)
@@ -26,7 +30,6 @@ logger = None  # type: logging.Logger
 logFormatter = None  # type: logging.Formatter
 courseLogHandlers = dict()
 courseLoggers = dict()
-
 
 def getCanvasInstance():
     return CanvasAPI(config.Canvas.API_BASE_URL,
@@ -285,6 +288,15 @@ def getMainLogFilePath(nameSuffix=None):
         mainLogName + config.Application.Logging.LOG_FILENAME_EXTENSION,
     )))
 
+def logToStdOut():
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+ 
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
 
 def getCourseLogger(courseID, courseName):
     """
@@ -424,6 +436,8 @@ def emailLogForCourseID(courseID, recipients):
 
     try:
         server = smtplib.SMTP(config.Application.Email.SMTP_SERVER)
+        logger.debug("mail server: "+config.Application.Email.SMTP_SERVER)
+        server.set_debuglevel(True)
         server.sendmail(config.Application.Email.SENDER_ADDRESS, recipients, message.as_string())
         server.quit()
         logger.info('Email sent to {recipients} for course {courseID}'.format(**locals()))
@@ -465,6 +479,9 @@ def main():
     logger = logging.getLogger(config.Application.Logging.MAIN_LOGGER_NAME)  # type: logging.Logger
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logHandler)
+    
+    # Add logging to stdout for OpenShift.
+    logToStdOut()
 
     argumentParser = argparse.ArgumentParser()
     argumentParser.add_argument('--mail', '--email', dest='sendEmail',
