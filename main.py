@@ -25,7 +25,7 @@ import util
 ##### Improved tracebacks 
 import traceback
 
-def handleError(self, record):
+def handleError(self, record):  # @UnusedVariable
     traceback.print_stack()
 logging.Handler.handleError = handleError
 #####
@@ -135,6 +135,10 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
 
 def addCanvasUsersToGroup(logger, course, instructorLog, group,courseUsers):
     groupNameAndID = util.formatNameAndID(group)
+    
+    if len(courseUsers) == 0:
+        logger.info('No new users to add to ArcGIS Group {}'.format(groupNameAndID))
+        return
 
     logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
     # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name, separated by an underscore
@@ -144,7 +148,7 @@ def addCanvasUsersToGroup(logger, course, instructorLog, group,courseUsers):
     """:type usersNotAdded: list"""
     usersCount = len(arcGISFormatUsers)
     usersCount -= len(usersNotAdded) if usersNotAdded else 0
-    instructorLog += 'Number of users in group: {}\n\n'.format(usersCount)
+    instructorLog += 'Number of users added to group: {}\n\n'.format(usersCount)
     if usersNotAdded:
         logger.warning('Warning: Some or all users not added to ArcGIS group {}: {}'.format(groupNameAndID, usersNotAdded))
         instructorLog += 'Users not in group (these users need ArcGIS accounts created for them):\n' + '\n'.join(map(lambda userNotAdded:'* ' + userNotAdded, usersNotAdded)) + '\n\n' + 'ArcGIS group ID number:\n{}\n\n'.format(group.id)
@@ -170,6 +174,10 @@ def getCurrentArcGISMembers(logger, group, groupNameAndID):
 
 # Remove users (in ArcGIS name format), from ArcGIS group
 def removeListOfUsersFromArcGISGroup(logger, group, groupNameAndID, groupUsers):
+
+    if len(groupUsers) == 0:
+        logger.info('No obsolete users to remove from ArcGIS Group {}'.format(groupNameAndID))
+        return None
 
     logger.info('ArcGIS Users to be removed from ArcGIS Group [{}] [{}]'.format(groupNameAndID, ','.join(groupUsers)))
     results = None
@@ -230,9 +238,44 @@ def lookForExistingArcGISGroup(arcGIS, logger, groupTitle):
         logger.info('Unexpected output while searching for ArcGIS group "{}": {}'.format(groupTitle, output))
     return group
 
+# Take two lists and separate out those only in first list, those only in second list, and those in both.
+# Converts to sets so duplicate entries will become singular, list order is arbitrary.
+def listDifferences(left_list, right_list):
+    
+    left_only = list(set(left_list) - set(right_list))
+    right_only = list(set(right_list) - set(left_list))
+    both = list(set(right_list) & set(left_list))
+               
+    return left_only, right_only, both
+
+# Look at lists of users already in group and now in the course and return new lists
+# of the differences so that as few changes as possible are made.
+def minimizeUserChanges(groupUsers, courseUsers):
+    logger.info('groupUsers input: {}'.format(groupUsers))
+    logger.info('courseUsers input: {}'.format(courseUsers))
+    
+    # Based on current Canvas and ArcGIS memberships find obsolete users in ArcGIS group, new users in course, 
+    # and members in both (hence unchanged).
+    minGroupUsers, minCourseUsers, unchangedUsers = listDifferences(groupUsers,courseUsers)
+    
+    logger.debug('changedGroupUsers: {}'.format(minGroupUsers))
+    logger.debug('changedCourseUsers: {}'.format(minCourseUsers))
+    logger.debug('unchanged Users: {}'.format(unchangedUsers))
+    
+    return minGroupUsers, minCourseUsers
+
+def minimizeUserChangesOLD(groupUsers, courseUsers):
+    # this does nothing new so far.
+    return groupUsers, courseUsers
+
+#Convert list of user names
+def formatUsersNamesForArcGIS(user, userList):
+    userList = [user + '_' + config.ArcGIS.ORG_NAME for user in userList]
+    return userList
 
 # For this course and assignment make sure there is an existing (or new) group or create new group with no members
 # and add the canvas course members to it.
+
 def updateGroupForCourse(arcGIS, courseUserDictionary, logger, groupTags, assignment, course,instructorLog):
     
     groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
@@ -250,21 +293,45 @@ def updateGroupForCourse(arcGIS, courseUserDictionary, logger, groupTags, assign
         # want to pass in lists of users to remove and to add.
         #continue
         #addCanvasUsersToGroup(courseUserDictionary, logger, course, instructorLog, group, groupNameAndID, results)
+                
         # remove members from group
         # currently remove all users from group
         
-        
         # TODO: have method to make the two lists to pass down
-        
-                
+            
         groupNameAndID = util.formatNameAndID(group)
-        
+
         groupUsers= getCurrentArcGISMembers(logger, group, groupNameAndID)
-        instructorLog, results = removeExistingGroupMembers(logger, groupTitle, group,instructorLog,groupUsers)
+        groupUsersTrimmed = [re.sub('_\S+$','',gu) for gu in groupUsers]
         
-        # add the canvas members 
+        logger.info('gUT: '+','.join(groupUsersTrimmed))
+                             
+        #groupUsersTrimmed = [re.sub('_\S+$','',user) for user in courseUserDictionary[course.id] if user.login_id is not None]
+        
+        
+        logger.debug('All ArcGIS users currently in Group {}: ArcGIS Users: {}'.format(groupNameAndID, groupUsers))
+                
         courseUsers = [user.login_id for user in courseUserDictionary[course.id] if user.login_id is not None]
-        addCanvasUsersToGroup(logger, course, instructorLog, group,courseUsers)
+        logger.debug('All Canvas users in course for Group {}: Canvas Users: {}'.format(groupNameAndID, courseUsers))
+        
+        # compute the exact sets of users to change.
+        changedArcGISGroupUsers, changedCourseUsers = minimizeUserChanges(groupUsersTrimmed,courseUsers)
+        
+        # fix up the user name format for ArcGIS users names 
+        changedArcGISGroupUsers = formatUsersNamesForArcGIS(user, changedArcGISGroupUsers)       
+        
+        #minimizeUserChangesREAL(groupUsersTrimmed,courseUsers)
+        
+        logger.info('Minimal list of users to remove from ArcGIS: Group {}: ArcGIS Users: {}'.format(groupNameAndID, changedArcGISGroupUsers))
+        logger.info('Minimal list of user to add from Canvas course for ArcGIS: Group {}: Canvas Users: {}'.format(groupNameAndID, changedCourseUsers))
+        #logger.info('Changes ng new Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, changedCourseUsers))
+        
+        # Now remove and add users from group
+        instructorLog, results = removeExistingGroupMembers(logger, groupTitle, group,instructorLog,changedArcGISGroupUsers) 
+        addCanvasUsersToGroup(logger, course, instructorLog, group,changedCourseUsers)
+                
+        #instructorLog, results = removeExistingGroupMembers(logger, groupTitle, group,instructorLog,groupUsers) 
+        #addCanvasUsersToGroup(logger, course, instructorLog, group,courseUsers)
 
 # def updateGroupForCourse(arcGIS, courseUserDictionary, logger, groupTags, assignment, course,instructorLog):
 #     
