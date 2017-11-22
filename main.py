@@ -1,5 +1,11 @@
 from __future__ import print_function
 
+# TTD:
+# TODO: pull out / organize logging into a startup method.
+# TODO: can created group title be passed around as part of group object rather than separately?
+# TODO: does new API simplify things?
+# TODO: better way to do instructorLog?
+
 import argparse
 import datetime
 import logging
@@ -23,6 +29,7 @@ from CanvasAPI import CanvasAPI
 import secrets  # @UnusedImport
 import util
 
+## TODO: centralize the logging setup.
 ##### Improved code tracebacks for exceptions
 import traceback
 
@@ -38,9 +45,8 @@ RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
 # Hold parsed options
 options = None
 
-# Level to use for all logging
-#logging_level = logging.DEBUG
-logging_level = logging.INFO
+# Adjustable level to use for all logging
+loggingLevel = logging.INFO
 
 logger = None  # type: logging.Logger
 logFormatter = None  # type: logging.Formatter
@@ -250,14 +256,14 @@ def lookForExistingArcGISGroup(arcGIS, groupTitle):
 
 # Take two lists and separate out those only in first list, those only in second list, and those in both.
 # Uses to sets to do this so duplicate entries will become singular and list order will be arbitrary.
-def listDifferences(left_list, right_list):
+def listDifferences(leftList, rightList):
     """Take 2 lists and return 3 lists of entries: only in first, only in seconds, only in both lists.  Element order is not preserved. Duplicates will be compressed."""
     
-    left_only = list(set(left_list) - set(right_list))
-    right_only = list(set(right_list) - set(left_list))
-    both = list(set(right_list) & set(left_list))
+    leftOnly = list(set(leftList) - set(rightList))
+    rightOnly = list(set(rightList) - set(leftList))
+    both = list(set(rightList) & set(leftList))
                
-    return left_only, right_only, both
+    return leftOnly, rightOnly, both
 
 # Look at lists of users already in group and those currently in the course and return new lists
 # of only the users that need to be added and need to be removed, so unchanged people remain untouched.
@@ -284,7 +290,7 @@ def formatUsersNamesForArcGIS(user, userList):
     return userList
 
 
-def updateGroupForCourse(arcGIS, courseUserDictionary, groupTags, assignment, course,instructorLog):
+def updateArcGISGroupForAssignment(arcGIS, courseUserDictionary, groupTags, assignment, course,instructorLog):
     """" Make sure there is a corresponding ArcGIS group for this Canvas course and assignment.  Sync up the ArcGIS members with the Canvas course members."""
     
     groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
@@ -333,7 +339,7 @@ def updateArcGISGroupsForAssignments(arcGIS, assignments, courseDictionary,cours
     for assignment in assignments:
         course = courseDictionary[assignment.course_id]
         instructorLog = ''
-        updateGroupForCourse(arcGIS, courseUserDictionary, groupTags, assignment, course,instructorLog)
+        updateArcGISGroupForAssignment(arcGIS, courseUserDictionary, groupTags, assignment, course,instructorLog)
 
 
 def getCoursesByID(canvas, courseIDs):
@@ -388,11 +394,11 @@ def getMainLogFilePath(nameSuffix=None):
 def logToStdOut():
     """Have log output go to stdout in addition to any file."""
     root = logging.getLogger()
-    root.setLevel(logging_level)
+    root.setLevel(loggingLevel)
  
     ch = logging.StreamHandler(sys.stdout)
     #ch.setLevel(logging.DEBUG)
-    ch.setLevel(logging_level)
+    ch.setLevel(loggingLevel)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     ch.setFormatter(formatter)
     root.addHandler(ch)
@@ -423,7 +429,7 @@ def getCourseLogger(courseID, courseName):
     logHandlerCourse.setFormatter(logFormatterFriendly)
 
     courseLogger = logging.getLogger(courseID)  # type: logging.Logger
-    courseLogger.setLevel(logging_level)
+    courseLogger.setLevel(loggingLevel)
     courseLogger.addHandler(logHandlerMain)
     courseLogger.addHandler(logHandlerCourse)
 
@@ -604,7 +610,7 @@ def main():
     logHandler.setFormatter(logFormatter)
 
     logger = logging.getLogger(config.Application.Logging.MAIN_LOGGER_NAME)  # type: logging.Logger
-    logger.setLevel(logging_level)
+    logger.setLevel(loggingLevel)
     logger.addHandler(logHandler)
     
     # Add logging to stdout for OpenShift.
