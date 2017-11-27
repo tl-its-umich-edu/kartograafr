@@ -1,11 +1,25 @@
 # Cron in docker for Kartograafr
+# During 08:00 and 15:00 runs, process assignment groups and
+# send email to instructors
+### original schedule
+#######0 8,15 * * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+#0 8,15 * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
 
-## TEMP - Just ensure that cron is running 
-* * * * *   echo "Hello $(date)" >>/var/log/cron.log 2>&1
+##### EXAMPLE: starting at 5 after the hour run every twenty minutes
+##### EXAMPLE: #5-59/20 * * * *
 
-### run periodically, (but run much less often when live)
-### redirect is to be able to send logging to stdout
-*/5 * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+######
+### run every 10 minutes starting at minute zero
+0-59/10 * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+######
 
+# During all other hourly runs, process assignment groups without
+# sending email to instructors
+# original schedule
+#0 0-7,9-14,16-23 * * * * /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
+
+######
+# run every 10 minutes starting at 5 past the hour
+5-59/10 * * * * /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
+######
 #end
-

@@ -1,1 +1,1 @@
-config-test.py
+./config-docker.py

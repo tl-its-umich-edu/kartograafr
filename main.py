@@ -46,6 +46,7 @@ RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
 options = None
 
 # Adjustable level to use for all logging
+#loggingLevel = logging.DEBUG
 loggingLevel = logging.INFO
 
 logger = None  # type: logging.Logger
@@ -270,17 +271,15 @@ def listDifferences(leftList, rightList):
 
 def minimizeUserChanges(groupUsers, courseUsers):
     """Compute minimal changes to ArgGIS group membership so that members who don't need to be changed aren't changed."""
-    logger.info('groupUsers input: {}'.format(groupUsers))
-    logger.info('courseUsers input: {}'.format(courseUsers))
+    logger.debug('groupUsers input: {}'.format(groupUsers))
+    logger.debug('courseUsers input: {}'.format(courseUsers))
     
     # Based on current Canvas and ArcGIS memberships find obsolete users in ArcGIS group, new users in course,
     # and members in both (hence unchanged).
     minGroupUsers, minCourseUsers, unchangedUsers = listDifferences(groupUsers,courseUsers)
     
-    logger.debug('changedGroupUsers: {}'.format(minGroupUsers))
-    logger.debug('changedCourseUsers: {}'.format(minCourseUsers))
-    logger.debug('unchanged Users: {}'.format(unchangedUsers))
-    
+    logger.info('changedArcGISGroupUsers: {} changedCanvasUsers: {} unchanged Users {}'.format(minGroupUsers,minCourseUsers,unchangedUsers))
+  
     return minGroupUsers, minCourseUsers
 
 
@@ -558,7 +557,7 @@ def emailLogForCourseID(courseID, recipients):
         try:
             server = smtplib.SMTP(config.Application.Email.SMTP_SERVER)
             logger.debug("mail server: " + config.Application.Email.SMTP_SERVER)
-            server.set_debuglevel(True)
+            server.set_debuglevel(config.Application.Email.DEBUG_LEVEL)
             server.sendmail(config.Application.Email.SENDER_ADDRESS, recipients, message.as_string())
             server.quit()
             logger.info('Email sent to {recipients} for course {courseID}'.format(**locals()))
@@ -624,6 +623,8 @@ def main():
                                 action=argparse._StoreTrueAction,
                                 help='print emails to log instead of sending them.')
     options, unknownOptions = argumentParser.parse_known_args()
+
+    logger.info('kart sys args: {} '.format(sys.argv[1:]))
 
     if unknownOptions:
         unknownOptionMessage = 'unrecognized arguments: %s' % ' '.join(unknownOptions)
@@ -707,6 +708,8 @@ def main():
         emailCourseLogs(courseInstructorDictionary)
 
     renameLogForCourseID(None)
+    
+    logger.info("current kartograaf run finished.")
 
 
 if __name__ == '__main__':

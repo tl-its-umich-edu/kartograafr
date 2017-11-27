@@ -5,7 +5,7 @@
 
 FROM docker.io/python:2.7
 
-RUN apt-get update && apt-get install -y cron
+RUN apt-get update && apt-get install -y cron vim
 
 ######### set timezone
 # TODO: allow overriding the time zone setting with an environment variable.
