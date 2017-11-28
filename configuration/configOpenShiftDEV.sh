@@ -1,38 +1,22 @@
-import os
+## Configuration for OpenShift dev version.  Production will need a separate version.
 
+import os
 
 class Application(object):
     class Email(object):
-#        SMTP_SERVER = '127.0.0.1'
-        SMTP_SERVER = 'docker.for.mac.localhost;1025'
+        DEBUG_LEVEL = False
+        SMTP_SERVER = 'mail-relay.itd.umich.edu'
         SENDER_ADDRESS = '"ArcGIS-Canvas Service Dev" <kartograafr-service-dev@umich.edu>'
         RECIPIENT_AT_DOMAIN = '@umich.edu'
         SUBJECT = 'ArcGIS-Canvas logs for course ID {courseID} (Dev)'
 
-
-    # directory path for logging may depend on the platform.  /private/.... may be on osx
-    # also '/tmp/log'
-#     class Logging(object):
-#         MAIN_LOGGER_NAME = 'kartograafr'
-#         DIRECTORY = './tmp/log'
-#         COURSE_DIRECTORY = os.path.join(DIRECTORY, 'courses')
-#         MAIN_LOG_BASENAME = 'main'
-#         LOG_FILENAME_EXTENSION = '.log'
-
-        #        DIRECTORY = '/tmp/log'
-        #        DIRECTORY = '/var/log/kartograafr'
-
-    # directory path for logging may depend on the platform.  /private/.... may be on osx
-    # also '/tmp/log'
+    # directory path for logging may depend on the platform. This setup is for Docker.
     class Logging(object):
         MAIN_LOGGER_NAME = 'kartograafr'
         DIRECTORY = '/var/log/kartograafr'
         COURSE_DIRECTORY = os.path.join(DIRECTORY, 'courses')
         MAIN_LOG_BASENAME = 'main'
         LOG_FILENAME_EXTENSION = '.log'
- 
-        #        DIRECTORY = '/tmp/log'
-        #        DIRECTORY = '/var/log/kartograafr'
 
 class Canvas(object):
     API_BASE_URL = 'https://umich.instructure.com/api/v1/'
@@ -48,7 +32,6 @@ class Canvas(object):
         114488,  # First ArcGIS Course (ARCGIS-1)
         135885,  # Another ArcGIS Course (ARCGIS-2)
     ))
-
 
 class ArcGIS(object):
     ORG_NAME = 'devumich' # For server URL (see below) and appended to ArcGIS usernames (i.e., "user_org")
