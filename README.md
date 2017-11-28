@@ -47,6 +47,13 @@ A template for a secrets file is in the the configuration directory.
 That template shouldn't be modified but should be copied and that copy
 should be read from the separate secure directory.
 
+When running locally the *startup.sh* script assumes that the
+secrets.py file is available in the subdirectory *./OPT/SECRETS*.
+That reference can be a symbolic link to the actual location.  On
+OpenShift the location will be set in the deployment
+configuration. See the OpenShift kartograafr dev project to see how it
+is configured.
+
 The template file illustrates how to easily implement an environmental variable
 override of the property value.  The code given is very likely not the
 best way to do this and is likely to be improved soon.
