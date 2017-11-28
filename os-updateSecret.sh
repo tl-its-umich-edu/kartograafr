@@ -4,9 +4,9 @@
 
 #set -x
 
-# if not arguments then print help
-if [ $# -eq 0 ]; then
-    echo "$0: <SECRET_NAME> <DIRECTORY> "
+# Must have both arguments.
+if [ $# -ne 2 ]; then
+    echo "usage: $0 <SECRET_NAME in OpenShift> <Local directory> "
     echo "Upload secrets to current OS project."
     echo "Must supply name that OS will use as the volume name "
     echo "and the path to the directory containing the secrets file(s)."

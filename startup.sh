@@ -24,6 +24,9 @@ SECRETS_DIR=/opt/secrets
 # Docker then localize environment settings and insist on there
 # already be an active Python virtual environment.
 
+# On OSX this assumes secrets.py is available in the sub-directory
+# ./OPT/SECRETS.  That file can be a symbolic link to a copy elsewhere.
+
 if [ $(uname) == Darwin ]; then
     echo "STARTUP ON OSX"
     if [ -z "${VIRTUAL_ENV}" ]; then

@@ -1,1 +1,1 @@
-configuration/configOpenShiftDEV.sh
+configuration/configOpenShiftDEV.py
