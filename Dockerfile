@@ -24,7 +24,8 @@ RUN mkdir -p -v /var/log/kartograafr/courses
 
 # Add the cron entry for kartograafr
 ## TODO: make the specific cron source file settable depending on environment variable.
-RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr.dev >> /etc/cron.d/kartograafr
+#RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr.dev >> /etc/cron.d/kartograafr
+RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr >> /etc/cron.d/kartograafr
 RUN crontab /etc/cron.d/kartograafr
 
 # Run cron.
