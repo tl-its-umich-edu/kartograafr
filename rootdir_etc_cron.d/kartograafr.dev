@@ -1,25 +1,18 @@
-# Cron in docker for Kartograafr
-# During 08:00 and 15:00 runs, process assignment groups and
+# kartograafr: ArcGIS/Canvas integration
+# Created from miserver version on 2017/11/29.
+
+#MAILTO=miserver-arcgis-canvas@umich.edu
+
+# Weekdays: At 07:00, 11:00, 15:00, and 19:00, process assignment groups and
 # send email to instructors
-### original schedule
-#######0 8,15 * * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
-#0 8,15 * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+###0 7,11,15,19 * * 1-5 root /usr/bin/python /usr/local/apps/kartograafr/main.py --mail
+0 7,11,15,19 * * 1-5 /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
 
-##### EXAMPLE: starting at 5 after the hour run every twenty minutes
-##### EXAMPLE: #5-59/20 * * * *
+# Weekdays: On all other hourly runs between 07:00 and 19:00, process
+# assignment groups without sending email to instructors
+###0 8-10,12-14,16-18 * * 1-5 root /usr/bin/python /usr/local/apps/kartograafr/main.py
+0 8-10,12-14,16-18 * * 1-5 /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
 
-######
-### run every 10 minutes starting at minute zero
-0-59/10 * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
-######
-
-# During all other hourly runs, process assignment groups without
-# sending email to instructors
-# original schedule
-#0 0-7,9-14,16-23 * * * * /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
-
-######
-# run every 10 minutes starting at 5 past the hour
-5-59/10 * * * * /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
-######
-#end
+# Weekends: At 07:00, process assignment groups and send email to instructors
+###0 7 * * 0,6 root /usr/bin/python /usr/local/apps/kartograafr/main.py --mail
+0 7 * * 0,6 /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1

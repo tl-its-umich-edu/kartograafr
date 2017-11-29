@@ -34,6 +34,9 @@ if [ $(uname) == Darwin ]; then
         exit 1;
     fi
 
+    # get rid of any existing complied python in case there is a change via symbolic link.
+    find . -name \*pyc -delete
+
     # Use the python virtual environment.
     source ${VIRTUAL_ENV}/bin/activate
     echo "Using python virtual environment: ${VIRTUAL_ENV}"
