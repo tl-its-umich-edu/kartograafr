@@ -5,7 +5,7 @@ SHELL=/bin/bash
 
 #MAILTO=miserver-arcgis-canvas@umich.edu
 
-## check that STARTUP_ENV_VARS are passed through.
+## Example of how to verify that STARTUP_ENV_VARS are passed through.
 # check to make sure that the env vars are captured.
 #*/2+1 * * * * source /root/STARTUP_ENV_VARS.sh && echo "HI FROM CRON" > /proc/1/fd/1 2>&1
 
