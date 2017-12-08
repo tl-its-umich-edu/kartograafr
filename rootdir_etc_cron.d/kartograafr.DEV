@@ -1,0 +1,25 @@
+# kartograafr: ArcGIS/Canvas integration
+# Based on miserver version on 2017/11/29.
+
+SHELL=/bin/bash
+
+#MAILTO=miserver-arcgis-canvas@umich.edu
+
+## check that STARTUP_ENV_VARS are passed through.
+# check to make sure that the env vars are captured.
+#*/2+1 * * * * source /root/STARTUP_ENV_VARS.sh && echo "HI FROM CRON" > /proc/1/fd/1 2>&1
+
+# Weekdays: At 07:00, 11:00, 15:00, and 19:00, process assignment groups and
+# send email to instructors
+#0 7,11,15,19 * * 1-5 /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+
+# run frequently for testing
+*/5 * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+
+### comment out prod schedule.
+# Weekdays: On all other hourly runs between 07:00 and 19:00, process
+# assignment groups without sending email to instructors
+#0 8-10,12-14,16-18 * * 1-5 /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
+
+# Weekends: At 07:00, process assignment groups and send email to instructors
+#0 7 * * 0,6 /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1

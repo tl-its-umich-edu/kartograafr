@@ -22,13 +22,10 @@ COPY . /usr/local/apps/kartograafr
 RUN mkdir -p -v /var/log/kartograafr
 RUN mkdir -p -v /var/log/kartograafr/courses
 
-# Add the cron entry for kartograafr
-## TODO: make the specific cron source file settable depending on environment variable.
-#RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr.dev >> /etc/cron.d/kartograafr
-RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr >> /etc/cron.d/kartograafr
-RUN crontab /etc/cron.d/kartograafr
+# The cron entry and config.py setup are done in startup-cron-env.sh.
+# There may be a better way.
 
-# Run cron.
-CMD ["cron", "-f"]
+# Run setup container and then run cron
+CMD ["/bin/bash","/usr/local/apps/kartograafr/startup-cron-env.sh"]
 
 #end

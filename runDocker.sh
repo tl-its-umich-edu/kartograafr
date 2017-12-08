@@ -1,32 +1,42 @@
-# Script to build and run kartograafr locally (e.g. a laptop).
+# Script to build and run kartograafr in Docker locally (e.g. a laptop).
+# This isn't used for OpenShift.
 # OpenShift builds will be a different process but, while the external
 # environment is different the same dockerfile should run in both locations.
-# (That's a bit asperational at the moment)
 
-set -x
+#set -x
+# Terminate if there is any error.
 set -e
 
-TAG=kart-dev
+# Setup a configuration type to identify the configuration files and the
+# Docker tag.
+CONFIG_TYPE=${CONFIG_TYPE:-DEV}
 
-### For development remap storage from Docker to host storage.
-HOST_CONFIG=${PWD}/configuration
-CONTAINER_CONFIG=/usr/local/apps/kartograafr/configuration
+# Use configuration type to generate a docker tag
+TAG=$(echo ${CONFIG_TYPE} | tr '[:upper:]' '[:lower:]')
+TAG=kart-${TAG}
 
+########### Setup docker environment volume mappings.
 HOST_LOG=${PWD}/tmp/log
 CONTAINER_LOG=/var/log/kartograafr
+V_LOG=" -v ${HOST_LOG}:${CONTAINER_LOG} "
 
 HOST_SECRETS=$(pwd)/OPT/SECRETS
 CONTAINER_SECRETS=/opt/secrets
-
-## Construct volume mapping
-V_CONFIG=" -v ${HOST_CONFIG}:${CONTAINER_CONFIG} "
-V_LOG=" -v ${HOST_LOG}:${CONTAINER_LOG} "
 V_SECRETS=" -v ${HOST_SECRETS}:${CONTAINER_SECRETS} "
+############
+
+# Add environment variable to pass to Docker container
+DOCKER_ENV=" -e CONFIG_TYPE=${CONFIG_TYPE} "
+
+## Merge all the variable Docker arguments.
+DOCKER_ARGS=" ${V_LOG} ${V_SECRETS} ${DOCKER_ENV}"
+
 ####
 
 docker build -t $TAG . \
-    && docker run -it ${V_LOG} ${V_CONFIG} ${V_SECRETS} --rm --name ${TAG}-run ${TAG} 2>&1
+       && docker run -it ${DOCKER_ARGS} --rm --name ${TAG}-run ${TAG} 2>&1
 
 echo "log directory: "
-ls -l ${HOST_LOG}
+echo -n "Done at: "
+date
 #end
