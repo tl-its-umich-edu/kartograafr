@@ -2,7 +2,7 @@ import datetime
 import inspect
 import logging
 import sys
-from cStringIO import StringIO
+from io import StringIO
 
 
 class UtilMixin(object):

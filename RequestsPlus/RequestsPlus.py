@@ -87,7 +87,7 @@ class RequestsPlus(util.UtilMixin, object):
         try:
             response = sessionRequestMethod(preparedAPIQueryURL, **kwargs)
         except requests.exceptions.RequestException as e:
-            print self._name + ' error: ' + e.message
+            print(self._name + ' error: ' + e.message)
 
         return response
 

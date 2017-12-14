@@ -19,10 +19,10 @@ class MembershipTestCase(unittest.TestCase):
     
     # test list comprehension 
     def trimTailList(self,string_list):
-        print "string_list: "+",".join(string_list)
+        print("string_list: "+",".join(string_list))
         #stuff = [u.lower() for u in string_list]
         stuff = [re.sub('_\S+$','',u) for u in string_list]
-        print "made list: "+",".join(stuff)
+        print("made list: "+",".join(stuff))
         return stuff
     
     #### helper
@@ -35,30 +35,30 @@ class MembershipTestCase(unittest.TestCase):
         s1 = "HOWDY_ho"
         right = "HOWDY"
         s = self.trimTail(s1)
-        self.assertEquals(right,s)
+        self.assertEqual(right,s)
 
     def test_HOWDY_ho_twice(self):
         s1 = "HOWDY_ho"
         s1 = s1+'_'+s1
         right = "HOWDY"
         s = self.trimTail(s1)
-        self.assertEquals(right,s)
+        self.assertEqual(right,s)
         
     def test_HOWDY(self):
         s1 = "HOWDY"
         s = self.trimTail(s1)
-        self.assertEquals(s1,s)
+        self.assertEqual(s1,s)
 
     def test_empty(self):
         s1 = ""
         s = self.trimTail(s1)
-        self.assertEquals(s1,s)
+        self.assertEqual(s1,s)
         
     def test_listOfTwo(self):
         s1 = ["HOWDY_A","DUTY_B"]
         right = ['HOWDY','DUTY']
         s = self.trimTailList(s1)
-        self.assertEquals(right,s)
+        self.assertEqual(right,s)
 
     ############# verify getting list differences
         
