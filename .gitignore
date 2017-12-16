@@ -1,5 +1,9 @@
 *-.py
 
+*.bak
+.pydevproject
+*.P3
+
 /OPT
 secrets.py
 
