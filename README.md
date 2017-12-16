@@ -136,3 +136,9 @@ disk file instead of stdout.
 1. Control the synchronization of your assignment with ArcGIS online by setting the "Available From", "Until", and "Due Date" times.
 1. Once all of the above requirements are satisfied, kartograafr will synchronize your course's assignments with ArcGIS Online.  It will happen automatically, several times each day.  You will receive email a few times each day showing the results of the synchronizations.
 
+# Python 2 to Python 3
+1. run 2to3 
+1. change print statements to function calls.
+1. For RequestPlus copy urlnorm.py from standard-packages and make some p3 updates. It is not a module and isn't P3 compatible
+1. requirements.txt take out requirement for python >= 2.7.5
+1. util.py - change methodName args (drop depth), change name of "object" as parameter name.

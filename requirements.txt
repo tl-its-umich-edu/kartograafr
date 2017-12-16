@@ -10,7 +10,7 @@
 # For now, the MiServer services can only provide up to Python 2.7.8,
 # but with great effort.  We will stick with 2.7.5 and hack our copy
 # of ArcREST to work with that.
-python >= 2.7.5
+#python >= 2.7.5
 
 python-dateutil
 requests

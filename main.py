@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 # TTD:
 # TODO: pull out / organize logging into a startup method.
@@ -167,7 +167,7 @@ def addCanvasUsersToGroup(course, instructorLog, group, courseUsers):
     instructorLog += 'Number of users added to group: {}\n\n'.format(usersCount)
     if usersNotAdded:
         logger.warning('Warning: Some or all users not added to ArcGIS group {}: {}'.format(groupNameAndID, usersNotAdded))
-        instructorLog += 'Users not in group (these users need ArcGIS accounts created for them):\n' + '\n'.join(map(lambda userNotAdded:'* ' + userNotAdded, usersNotAdded)) + '\n\n' + 'ArcGIS group ID number:\n{}\n\n'.format(group.id)
+        instructorLog += 'Users not in group (these users need ArcGIS accounts created for them):\n' + '\n'.join(['* ' + userNotAdded for userNotAdded in usersNotAdded]) + '\n\n' + 'ArcGIS group ID number:\n{}\n\n'.format(group.id)
     instructorLog += '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n'
     courseLogger = getCourseLogger(course.id, course.name)
     courseLogger.info(instructorLog)
@@ -466,7 +466,7 @@ def getCourseLogHandler(courseID, courseName):
 def closeAllCourseLoggerHandlers():
     global courseLoggers
 
-    for (courseID, courseLogger) in courseLoggers.iteritems():  # type: logging.Logger
+    for (courseID, courseLogger) in courseLoggers.items():  # type: logging.Logger
         for handler in courseLogger.handlers:  # type: logging.Handler
             handler.close()
 
@@ -474,7 +474,7 @@ def closeAllCourseLoggerHandlers():
 def closeAllCourseLogHandlers():
     global courseLogHandlers
 
-    for (courseID, courseLogHandler) in courseLogHandlers.iteritems():
+    for (courseID, courseLogHandler) in courseLogHandlers.items():
         courseLogHandler.close()
 
 
@@ -489,11 +489,9 @@ def getCourseIDsFromConfigCoursePage(canvas, courseID, pageName):
         configCoursePage = pages.pop()
         configCoursePageTree = BeautifulSoup(configCoursePage.body, builder=HTMLParserTreeBuilder())
 
-        courseURLs = set(map(
-            lambda a: a['href'],
-            configCoursePageTree.find_all('a', href=re.compile(VALID_COURSE_URL_REGEX))))
+        courseURLs = set([a['href'] for a in configCoursePageTree.find_all('a', href=re.compile(VALID_COURSE_URL_REGEX))])
         if courseURLs:
-            courseIDs = map(lambda url: int(url.split('/').pop()), courseURLs)
+            courseIDs = [int(url.split('/').pop()) for url in courseURLs]
 
     return courseIDs
 
@@ -582,10 +580,9 @@ def emailCourseLogs(courseInstructors):
     
     logger.info('Preparing to send email to instructors...')
 
-    for courseID, instructors in courseInstructors.items():
-        recipients = map(lambda instructor: instructor.sis_login_id +
-                                            config.Application.Email.RECIPIENT_AT_DOMAIN,
-                         instructors)
+    for courseID, instructors in list(courseInstructors.items()):
+        recipients = [instructor.sis_login_id +
+                                            config.Application.Email.RECIPIENT_AT_DOMAIN for instructor in instructors]
         emailLogForCourseID(courseID, recipients)
 
 

@@ -19,10 +19,10 @@ class MembershipTestCase(unittest.TestCase):
     
     # test list comprehension 
     def trimTailList(self,string_list):
-        print "string_list: "+",".join(string_list)
+        print( "string_list: "+",".join(string_list))
         #stuff = [u.lower() for u in string_list]
         stuff = [re.sub('_\S+$','',u) for u in string_list]
-        print "made list: "+",".join(stuff)
+        print ("made list: "+",".join(stuff))
         return stuff
     
     #### helper

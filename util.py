@@ -1,13 +1,23 @@
+#from __future__ import absolute_import
+
 import datetime
 import inspect
 import logging
 import sys
-from cStringIO import StringIO
+#from cStringIO import StringIO
+
+from io import StringIO
 
 
+
+# class UtilMixin(object):
+#     def methodName(self, depth=1):
+#         return inspect.currentframe(depth).f_code.co_name
+    
+# Python 3 depth argument unnecessary and caused "too many args" error.
 class UtilMixin(object):
-    def methodName(self, depth=1):
-        return inspect.currentframe(depth).f_code.co_name
+    def methodName(self):
+        return inspect.currentframe().f_code.co_name
 
 
 class CaptureStdoutLines(list):
@@ -52,8 +62,10 @@ def stringContainsAllCharacters(string, characters):
     return False not in [character in string for character in characters]
 
 
-def formatNameAndID(object):
-    return '"{}" ({})'.format(object.title, object.id)
+#def formatNameAndID(object):
+def formatNameAndID(objectA):
+    #return '"{}" ({})'.format(object.title, object.id)
+    return '"{}" ({})'.format(objectA.title, objectA.id)
 
 
 def elideString(string):
