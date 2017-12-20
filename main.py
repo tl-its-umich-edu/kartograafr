@@ -59,6 +59,7 @@ def getCanvasInstance():
                      authZToken=config.Canvas.API_AUTHZ_TOKEN)
 
 
+#def getArcGISConnectionXXX(securityinfo):
 def getArcGISConnection(securityinfo):
     """
     Get a connection object for ArcGIS based on configuration options

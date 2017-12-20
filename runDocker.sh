@@ -6,7 +6,7 @@
 set -x
 set -e
 
-TAG=kart-dev
+TAG=kart-dev-p3
 
 ### For development remap storage from Docker to host storage.
 HOST_CONFIG=${PWD}/configuration

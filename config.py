@@ -1,1 +1,1 @@
-configuration/configOpenShiftPROD.py
+configuration/configOpenShiftDEV.py

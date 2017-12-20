@@ -3,7 +3,8 @@
 # - a couple of settings should be overrideable by environment variables.  See TODOs below.
 # - This runs as root.  Cron may require further work if the root user is not allowed.
 
-FROM docker.io/python:2.7
+#FROM docker.io/python:2.7
+FROM docker.io/python:3.6
 
 RUN apt-get update && apt-get install -y cron vim
 
@@ -24,8 +25,8 @@ RUN mkdir -p -v /var/log/kartograafr/courses
 
 # Add the cron entry for kartograafr
 ## TODO: make the specific cron source file settable depending on environment variable.
-#RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr.dev >> /etc/cron.d/kartograafr
-RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr >> /etc/cron.d/kartograafr
+RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr.dev >> /etc/cron.d/kartograafr
+#RUN cat /usr/local/apps/kartograafr/rootdir_etc_cron.d/kartograafr >> /etc/cron.d/kartograafr
 RUN crontab /etc/cron.d/kartograafr
 
 # Run cron.

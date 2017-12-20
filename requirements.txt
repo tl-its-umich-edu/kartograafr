@@ -1,6 +1,8 @@
 # For more information, see:
 # * https://www.python.org/dev/peps/pep-0496/
 
+## kartograafr converted to python 3
+
 # IntelliJ IDEA's Python plugin has a bug that causes it to always
 # report this Python version requirement as not satisfied.  It's
 # valid for pip.  IDEA can be told to ignore this requirement.
@@ -14,7 +16,8 @@
 
 python-dateutil
 requests
-urlnorm
+### needed to copy urlnorm and update since not python 3 compatible.
+#urlnorm
 
 # Beautiful Soup 4 is usually intalled as the package "beautifulsoup4".
 # However, installing it by that name causes IntelliJ IDEA's Python
