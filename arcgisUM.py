@@ -102,33 +102,42 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
 
 
 #def addCanvasUsersToGroup(course, instructorLog, group, courseUsers,courseLogger):
-def addCanvasUsersToGroup(instructorLog, group, courseUsers,courseLogger):
+def addCanvasUsersToGroup(instructorLog, group, courseUsers):
     """Add new users to the ArcGIS group.  """
     groupNameAndID = util.formatNameAndID(group)
     
+    logger.info("addCanvasUsersToGroup: enter")
+    
     if len(courseUsers) == 0:
         logger.info('No new users to add to ArcGIS Group {}'.format(groupNameAndID))
-        return
+        return instructorLog
 
     logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
     # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name appended.
     user="NULL"
     arcGISFormatUsers = formatUsersNamesForArcGIS(user, courseUsers)
     logger.debug("addCanvasUsersToGroup: formatted: {}".format(arcGISFormatUsers))
+    
     #results = group.addUsersToGroups(users=','.join(arcGISFormatUsers))
     results = group.add_users(arcGISFormatUsers)
+    logger.debug("adding: results: {}".format(results))
 
     usersNotAdded = results.get('notAdded')
     """:type usersNotAdded: list"""
     usersCount = len(arcGISFormatUsers)
     usersCount -= len(usersNotAdded) if usersNotAdded else 0
-    instructorLog += 'Number of users added to group: {}\n\n'.format(usersCount)
+    logger.debug("usersCount: {}".format(usersCount))
+    logger.debug("aCUTG: instructorLog 1: [{}]".format(instructorLog))
+    instructorLog += 'Number of users added to group: [{}]\n\n'.format(usersCount)
+    logger.debug("aCUTG: instructorLog 2: [{}]".format(instructorLog))
     if usersNotAdded:
         logger.warning('Warning: Some or all users not added to ArcGIS group {}: {}'.format(groupNameAndID, usersNotAdded))
         instructorLog += 'Users not in group (these users need ArcGIS accounts created for them):\n' + '\n'.join(['* ' + userNotAdded for userNotAdded in usersNotAdded]) + '\n\n' + 'ArcGIS group ID number:\n{}\n\n'.format(group.id)
     instructorLog += '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n'
-    #courseLogger = getCourseLogger(course.id, course.name)
-    courseLogger.info(instructorLog)
+    logger.debug("aCUTG: instructorLog 3: [{}]".format(instructorLog))
+
+    logger.info("addCanvasUsersToGroup: instructorLog: [{}]".format(instructorLog))
+    return instructorLog
 
 
 def getCurrentArcGISMembers(group, groupNameAndID):
@@ -203,9 +212,8 @@ def createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog):
     
     logger.info('Creating ArcGIS group: "{}"'.format(groupTitle))
     instructorLog += 'Creating ArcGIS group: "{}"\n'.format(groupTitle)
-    logger.error("*********** at least try to create the group")
     try:
-        group = arcGIS.groups.creat(groupTitle,groupTags)
+        group = arcGIS.groups.create(groupTitle,groupTags)
     except RuntimeError as exception:
         logger.info('Exception while creating ArcGIS group "{}": {}'.format(groupTitle, exception))
     
