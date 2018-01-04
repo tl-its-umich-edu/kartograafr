@@ -3,6 +3,9 @@
 import datetime
 import inspect
 import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 #from cStringIO import StringIO
 
@@ -10,15 +13,19 @@ from io import StringIO
 
 
 
-# class UtilMixin(object):
-#     def methodName(self, depth=1):
-#         return inspect.currentframe(depth).f_code.co_name
+#class UtilMixin(object):
+#    def methodName(self, depth=1):
+#        return inspect.currentframe(depth).f_code.co_name
     
 # Python 3 depth argument unnecessary and caused "too many args" error.
+# class UtilMixin(object):
+#     def methodName(self):
+#         return inspect.currentframe().f_code.co_name
+
 class UtilMixin(object):
     def methodName(self):
-        return inspect.currentframe().f_code.co_name
-
+        logger.debug("call methodName")
+    
 
 class CaptureStdoutLines(list):
     """

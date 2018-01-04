@@ -1,6 +1,28 @@
 # kartograafr
 ArcGIS/Canvas data bridge
 
+# NOTES:
+Probably need to install Anaconda as separate environment to run
+native on OSX and to run inside eclipse.  See https://docs.anaconda.com/anaconda/user-guide/tasks/integration/eclipse-pydev
+
+anaconda comes with pip and can create virtual environments
+
+activate anaconda environment with something like:
+*${BASE_ANACONDA}/bin/activate <env name>*
+
+Where BASE_ANACONDA is a base anaconda install
+like:. ~/dev/ANACONDA/anaconda3
+
+Get  a list of all the anaconda environments with: *conda info --envs*
+You will need to setup some anaconda environment to use conda.
+You can use *...../activate* without specifying an environment to use
+the "root" environment.
+
+
+Where BASE_ANACONDA is a base installation env like:  . ~/dev/ANACONDA/anaconda3/bin/activate conda-python-3
+
+need install the arcgis api: **conda install -c esri arcgis**
+
 ## About
 **_kartograafr_** — "kart-uh-GRAFF-fur", or in IPA: ['kɑr.toː.*ɣraːf.fər]
 

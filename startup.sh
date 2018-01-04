@@ -20,6 +20,7 @@ LOG_DIR=/var/log
 APP_DIR=/usr/local/apps/kartograafr
 SECRETS_DIR=/opt/secrets
 
+
 # If running the application directly on OSX command line without
 # Docker then localize environment settings and insist on there
 # already be an active Python virtual environment.
@@ -27,6 +28,7 @@ SECRETS_DIR=/opt/secrets
 # On OSX this assumes secrets.py is available in the sub-directory
 # ./OPT/SECRETS.  That file can be a symbolic link to a copy elsewhere.
 
+### This mixes up setting up python virtenv and OSX environment
 if [ $(uname) == Darwin ]; then
     echo "STARTUP ON OSX"
     if [ -z "${VIRTUAL_ENV}" ]; then
@@ -47,6 +49,19 @@ if [ $(uname) == Darwin ]; then
     # use local secrets directory.
     SECRETS_DIR=./OPT/SECRETS
 fi
+
+
+USE_CONDA_BIN=/opt/conda/bin
+##### see if need to activate conda environment
+if [ -n "${USE_CONDA_ENV}" ]; then
+    echo "use conda environment ${USE_CONDA_ENV}"
+    source ${USE_CONDA_BIN}/activate ${USE_CONDA_ENV}
+fi
+
+
+#### at this point have the executible environment setup be it
+# venv or conda or default.
+####
 
 # The application's secret/sensitive information is kept in a separate
 # directory.  Now make that directory visible to the application.

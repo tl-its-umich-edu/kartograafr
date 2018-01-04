@@ -1,5 +1,7 @@
 import requests
-import urlnorm
+#import url_normalize
+from url_normalize import url_normalize
+#import urlnorm
 #from . import urlnorm
 
 #import six
@@ -70,7 +72,9 @@ class RequestsPlus(util.UtilMixin, object):
         if apiQueryURI.startswith(self.apiBaseURL):
             return apiQueryURI
 
-        return urlnorm.norm(self.apiBaseURL + '/' + apiQueryURI)
+        #return urlnorm.norm(self.apiBaseURL + '/' + apiQueryURI)
+        #return url_normalize.norm(self.apiBaseURL + '/' + apiQueryURI)
+        return url_normalize(self.apiBaseURL + '/' + apiQueryURI)
 
     def _sendRequest(self, httpMethod, apiQueryURI, **kwargs):
         """
@@ -127,7 +131,8 @@ class RequestsPlus(util.UtilMixin, object):
         :rtype: requests.Response
         """
 
-        response = self._sendRequest(self.methodName(), apiQueryURI, **kwargs)
+        #response = self._sendRequest(self.methodName(), apiQueryURI, **kwargs)
+        response = self._sendRequest("get", apiQueryURI, **kwargs)
 
         if not response.ok:
             raise RuntimeError('Error {response.status_code} "{response.reason}" for request: {apiQueryURI}'
@@ -158,4 +163,5 @@ class RequestsPlus(util.UtilMixin, object):
         :rtype: requests.Response
         """
 
-        return self._sendRequest(self.methodName(), apiQueryURI, params=params, **kwargs)
+        #return self._sendRequest(self.methodName(), apiQueryURI, params=params, **kwargs)
+        return self._sendRequest("post", apiQueryURI, params=params, **kwargs)

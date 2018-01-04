@@ -6,7 +6,10 @@
 set -x
 set -e
 
-TAG=kart-dev-p3
+TAG=kart-dev-p3-esri
+
+### Docker file
+DOCKER_FILE=./Dockerfile.esri
 
 ### For development remap storage from Docker to host storage.
 HOST_CONFIG=${PWD}/configuration
@@ -24,7 +27,7 @@ V_LOG=" -v ${HOST_LOG}:${CONTAINER_LOG} "
 V_SECRETS=" -v ${HOST_SECRETS}:${CONTAINER_SECRETS} "
 ####
 
-docker build -t $TAG . \
+docker build -f ${DOCKER_FILE} -t $TAG . \
     && docker run -it ${V_LOG} ${V_CONFIG} ${V_SECRETS} --rm --name ${TAG}-run ${TAG} 2>&1
 
 echo "log directory: "

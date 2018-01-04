@@ -17,9 +17,10 @@
 python-dateutil
 requests
 ### needed to copy urlnorm and update since not python 3 compatible.
-#urlnorm
+#urlnorm (trying module below)
+url-normalize 
 
-# Beautiful Soup 4 is usually intalled as the package "beautifulsoup4".
+# Beautiful Soup 4 is usually installed as the package "beautifulsoup4".
 # However, installing it by that name causes IntelliJ IDEA's Python
 # plugin to always report "Package requirement 'bs4' is not satisfied"
 # for every "import bs4" statement.  Installing the "bs4" package
@@ -31,4 +32,4 @@ bs4
 # Esri's "arcrest_package" from PyPI has bugs and directory layout
 # problems. Instead, install from bugfix branch of TL fork and use
 # directory workaround.
-git+https://github.com/tl-its-umich-edu/ArcREST.git@umich-bugfixes#egg=arcrest&subdirectory=src
+#git+https://github.com/tl-its-umich-edu/ArcREST.git@umich-bugfixes#egg=arcrest&subdirectory=src

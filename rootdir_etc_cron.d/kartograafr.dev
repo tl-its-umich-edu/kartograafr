@@ -2,6 +2,9 @@
 # Created from miserver version on 2017/11/29.
 
 #MAILTO=miserver-arcgis-canvas@umich.edu
+SHELL="/bin/bash"
+# set the environment to use for conda
+USE_CONDA_ENV=py35
 
 # Weekdays: At 07:00, 11:00, 15:00, and 19:00, process assignment groups and
 # send email to instructors
