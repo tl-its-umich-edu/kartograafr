@@ -5,7 +5,8 @@ import os
 class Application(object):
     class Email(object):
         DEBUG_LEVEL = False
-        SMTP_SERVER = 'mail-relay.itd.umich.edu'
+#        SMTP_SERVER = 'mail-relay.itd.umich.edu'
+        SMTP_SERVER = 'docker.for.mac.localhost:1025'
         SENDER_ADDRESS = '"ArcGIS-Canvas Service Dev" <kartograafr-service-dev@umich.edu>'
         RECIPIENT_AT_DOMAIN = '@umich.edu'
         SUBJECT = 'ArcGIS-Canvas logs for course ID {courseID} (Dev)'
