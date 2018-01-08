@@ -1,9 +1,4 @@
-
-
-# TTD:
-# TODO: pull out / organize logging into a startup method.
-# TODO: can created group title be passed around as part of group object rather than separately?
-# TODO: better way to do instructorLog?
+# Wrapper around calls to arcgis.  Helps with testing and future changes.
 
 import datetime
 import logging
@@ -18,9 +13,9 @@ import config
 
 # secrets really is used during (import to change sensitive properties).
 import secrets  # @UnusedImport
+
 import util
 
-## TODO: centralize the logging setup.
 ##### Improved code tracebacks for exceptions
 import traceback
 
@@ -37,11 +32,7 @@ RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
 # Hold parsed options
 options = None
 
-# Adjustable level to use for all logging
-##loggingLevel = logging.DEBUG
-#loggingLevel = logging.INFO
-#logger = None  # type: logging.Logger
-#logFormatter = None  # type: logging.Formatter
+# TODO: required in this module?
 courseLogHandlers = dict()
 courseLoggers = dict()
 
@@ -88,12 +79,10 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
 
     logger.debug("group search string: escaped: {}".format(searchString))
     
-   
-
     try:
         gis_groups = arcGISAdmin.groups.search(searchString)
     except RuntimeError as exp:
-        logger.error("arcGIS error finding group: {}".format(searchString))
+        logger.error("arcGIS error finding group: {} exception: {}".format(searchString,exp))
     
     if len(gis_groups) > 0:
         return gis_groups.pop()
@@ -101,7 +90,6 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
     return None
 
 
-#def addCanvasUsersToGroup(course, instructorLog, group, courseUsers,courseLogger):
 def addCanvasUsersToGroup(instructorLog, group, courseUsers):
     """Add new users to the ArcGIS group.  """
     groupNameAndID = util.formatNameAndID(group)
@@ -152,21 +140,6 @@ def getCurrentArcGISMembers(group, groupNameAndID):
     """:type groupUsers: list"""
     return groupUsers
 
-# def getCurrentArcGISMembers(group, groupNameAndID):
-#     groupAllMembers = {}
-#     with util.CaptureStdoutLines() as output:
-#         try:
-#             #groupAllMembers = group.groupUsers()
-#             groupAllMembers = group.get_members()
-#         except Exception as exception:
-#             logger.info('Exception while getting users for ArcGIS group "{}": {}'.format(groupNameAndID, exception))
-#     if output:
-#         logger.info('Unexpected output while getting users for ArcGIS group "{}": {}'.format(groupNameAndID, output))
-#     groupUsers = groupAllMembers.get('users')
-#     """:type groupUsers: list"""
-#     return groupUsers
-
-
 def removeListOfUsersFromArcGISGroup(group, groupNameAndID, groupUsers):
     """Remove only listed users from ArcGIS group."""
 
@@ -176,14 +149,11 @@ def removeListOfUsersFromArcGISGroup(group, groupNameAndID, groupUsers):
 
     logger.info('ArcGIS Users to be removed from ArcGIS Group [{}] [{}]'.format(groupNameAndID, ','.join(groupUsers)))
     results = None
-    #with util.CaptureStdoutLines() as output:
     try:
             results = group.removeUsersFromGroup(','.join(groupUsers))
     except RuntimeError as exception:
             logger.error('Exception while removing users from ArcGIS group "{}": {}'.format(groupNameAndID, exception))
             
-
-   #     logger.info('Unexpected output while removing users from ArcGIS group "{}": {}'.format(groupNameAndID, output))
     usersNotRemoved = results.get('notRemoved')
     """:type usersNotRemoved: list"""
     if usersNotRemoved:
@@ -217,45 +187,17 @@ def createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog):
     except RuntimeError as exception:
         logger.info('Exception while creating ArcGIS group "{}": {}'.format(groupTitle, exception))
     
-#     with util.CaptureStdoutLines() as output:    
-#         try:
-#             arcGISOrgTools = orgtools.orgtools(arcGIS)
-#             group = arcGISOrgTools.createGroup(groupTitle, groupTags)
-#         except Exception as exception:
-#             logger.info('Exception while creating ArcGIS group "{}": {}'.format(groupTitle, exception))
-#     if output:
-#         logger.info('Unexpected output while creating ArcGIS group "{}": {}'.format(groupTitle, output))
-    
-
     return group, instructorLog
-
-# def createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog):
-#     """Create a new ArgGIS group.  Return group and any creation messages."""
-#     logger.info('Creating ArcGIS group: "{}"'.format(groupTitle))
-#     instructorLog += 'Creating ArcGIS group: "{}"\n'.format(groupTitle)
-#     with util.CaptureStdoutLines() as output:
-#         try:
-#             arcGISOrgTools = orgtools.orgtools(arcGIS)
-#             group = arcGISOrgTools.createGroup(groupTitle, groupTags)
-#         except Exception as exception:
-#             logger.info('Exception while creating ArcGIS group "{}": {}'.format(groupTitle, exception))
-#     if output:
-#         logger.info('Unexpected output while creating ArcGIS group "{}": {}'.format(groupTitle, output))
-#     return group, instructorLog
-
 
 # Get ArcGIS group with this title (if it exists)
 def lookForExistingArcGISGroup(arcGIS, groupTitle):
     """Find an ArgGIS group with a matching title."""
     logger.info('Searching for existing ArcGIS group "{}"'.format(groupTitle))
-  #  with util.CaptureStdoutLines() as output:
     try:
             group = getArcGISGroupByTitle(arcGIS, groupTitle)
     except RuntimeError as exception:
             logger.exception('Exception while searching for ArcGIS group "{}": {}'.format(groupTitle, exception))
             
-    #if output:
-    #   logger.info('Unexpected output while searching for ArcGIS group "{}": {}'.format(groupTitle, output))
     return group
 
 def formatUsersNamesForArcGIS(user, userList):

@@ -66,7 +66,7 @@ class MembershipTestCase(unittest.TestCase):
         l1 = ['ONE','TWO']
         l2 = ['TWO','THREE']
         
-        r1,r2,r3 = main.listDifferences(l1,l2)
+        r1,r2,r3 = main.computeListDifferences(l1,l2)
         #assertListUnorderedEqual
         self.assertListUnorderedEqual(r1,['ONE'])
         self.assertListUnorderedEqual(r2,['THREE'])
@@ -76,7 +76,7 @@ class MembershipTestCase(unittest.TestCase):
         l1 = ['ONE','TWO','FIVE']
         l2 = ['TWO','THREE','FOUR']
         
-        r1,r2,r3 = main.listDifferences(l1,l2)
+        r1,r2,r3 = main.computeListDifferences(l1,l2)
         self.assertListUnorderedEqual(r1,['ONE','FIVE'])
         self.assertListUnorderedEqual(r2,['FOUR','THREE'])
         self.assertListUnorderedEqual(r3,['TWO'])
@@ -85,7 +85,7 @@ class MembershipTestCase(unittest.TestCase):
         l1 = ['ONE','TWO','THREE']
         l2 = ['TWO','THREE','FOUR']
         
-        r1,r2,r3 = main.listDifferences(l1,l2)
+        r1,r2,r3 = main.computeListDifferences(l1,l2)
         self.assertListUnorderedEqual(r1,['ONE'])
         self.assertListUnorderedEqual(r2,['FOUR'])
         self.assertListUnorderedEqual(r3,['TWO','THREE'])
@@ -94,7 +94,7 @@ class MembershipTestCase(unittest.TestCase):
         l1 = ['TWO','THREE','FOUR','FIVE','TWO','FOUR']
         l2 = ['FOUR','THREE','FOUR']
 
-        r1,r2,r3 = main.listDifferences(l1,l2)
+        r1,r2,r3 = main.computeListDifferences(l1,l2)
 
         self.assertListUnorderedEqual(r1,['TWO','FIVE'])
         self.assertListUnorderedEqual(r2,[])
@@ -104,7 +104,7 @@ class MembershipTestCase(unittest.TestCase):
         l1 = ['TWO','THREE','FOUR','FIVE']
         l2 = ['FOUR','THREE']
 
-        r1,r2,r3 = main.listDifferences(l1,l2)
+        r1,r2,r3 = main.computeListDifferences(l1,l2)
 
         self.assertListUnorderedEqual(r1,['TWO','FIVE'])
         self.assertListUnorderedEqual(r2,[])
@@ -114,7 +114,7 @@ class MembershipTestCase(unittest.TestCase):
         l1 = ['TWO','THREE']
         l2 = ['TWO','THREE']
 
-        r1,r2,r3 = main.listDifferences(l1,l2)
+        r1,r2,r3 = main.computeListDifferences(l1,l2)
 
         self.assertListUnorderedEqual(r1,[])
         self.assertListUnorderedEqual(r2,[])

@@ -1,16 +1,5 @@
-
-
-# TTD:
-# TODO: pull out / organize logging into a startup method.
-# TODO: can created group title be passed around as part of group object rather than separately?
-# TODO: better way to do instructorLog?
-
-# P3:
-# TODO: urlnorm isn't P3 compatible?
-# TODO: get unicode right
-# TODO: split out the ArcGIS calls to separate module (partly done)
-# TODO: deal with data in secrets.py when other library module is also secrets.py. order of PYTHON PATH?
-# TODO: what about urlnorm? Does test script run under P3? https://github.com/jehiah/urlnorm/blob/master/test_urlnorm.py
+## TTD:
+### set log level by property / env variable
 
 import argparse
 import datetime
@@ -34,13 +23,12 @@ import config
 
 from CanvasAPI import CanvasAPI
 
-# secrets really is used during (import to change sensitive properties).
-# For now import from specific sub directory since there is another secrets.py earlier in the PYTHONPATH
-#import OPT secrets2# @UnusedImport
+# The secrets module really is used during import (to change sensitive
+# properties). 
 import secrets #@UnusedImport
+
 import util
 
-## TODO: centralize the logging setup.
 ##### Improved code tracebacks for exceptions
 import traceback
 
@@ -114,9 +102,9 @@ def getCourseAssignmentsWithOutcome(canvas, courseIDs, outcome):
     return matchingCourseAssignments
 
 
-# Take two lists and separate out those only in first list, those only in second list, and those in both.
-# Uses to sets to do this so duplicate entries will become singular and list order will be arbitrary.
-def listDifferences(leftList, rightList):
+# Take two lists and separate out entries only in first list, those only in second list, and those in both.
+# Uses sets to do this so duplicate entries will become singular and order in the list will be arbitrary.
+def computeListDifferences(leftList, rightList):
     """Take 2 lists and return 3 lists of entries: only in first, only in seconds, only in both lists.  Element order is not preserved. Duplicates will be compressed."""
     
     leftOnly = list(set(leftList) - set(rightList))
@@ -135,16 +123,14 @@ def minimizeUserChanges(groupUsers, courseUsers):
     
     # Based on current Canvas and ArcGIS memberships find obsolete users in ArcGIS group, new users in course,
     # and members in both (hence unchanged).
-    minGroupUsers, minCourseUsers, unchangedUsers = listDifferences(groupUsers,courseUsers)
+    minGroupUsers, minCourseUsers, unchangedUsers = computeListDifferences(groupUsers,courseUsers)
     
     logger.info('changedArcGISGroupUsers: {} changedCanvasUsers: {} unchanged Users {}'.format(minGroupUsers,minCourseUsers,unchangedUsers))
   
     return minGroupUsers, minCourseUsers
 
-
-
 def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, group):
-    """Add remove users from group to match Canvas course"""
+    """Add remove / users from group to match Canvas course"""
     
     # get the arcgis group members and the canvas course members.
     groupNameAndID = util.formatNameAndID(group)
@@ -158,15 +144,16 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
     # compute the exact sets of users to change.
     changedArcGISGroupUsers, changedCourseUsers = minimizeUserChanges(groupUsersTrimmed, canvasCourseUsers)
     # added to avoid undefined variable warning
-    user = None # fix up the user name format for ArcGIS users names
     
+    # fix up the user name format for ArcGIS users names
+    user = None 
     changedArcGISGroupUsers = arcgisUM.formatUsersNamesForArcGIS(user, changedArcGISGroupUsers)
     logger.info('Users to remove from ArcGIS: Group {}: ArcGIS Users: {}'.format(groupNameAndID, changedArcGISGroupUsers))
     logger.info('Users to add from Canvas course for ArcGIS: Group {}: Canvas Users: {}'.format(groupNameAndID, changedCourseUsers))
     
-    # Now remove and add exactly those users from group
-    instructorLog, results = arcgisUM.removeSomeExistingGroupMembers(groupTitle, group, instructorLog, changedArcGISGroupUsers)
-    instructorLog = arcgisUM.addCanvasUsersToGroup(instructorLog, group, changedCourseUsers, getCourseLogger(course.id, course.name))
+    # Now update only the users in the group that have changed.
+    instructorLog, results = arcgisUM.removeSomeExistingGroupMembers(groupTitle, group, instructorLog, changedArcGISGroupUsers)  # @UnusedVariable
+    instructorLog = arcgisUM.addCanvasUsersToGroup(instructorLog, group, changedCourseUsers)
     
     return instructorLog
 
@@ -408,15 +395,6 @@ def emailLogForCourseID(courseID, recipients):
         logger.warning('Exception while trying to read logfile for course {courseID}: {exception}'
                        .format(**locals()))
         return
-    
-    
-# from email.mime.text import MIMEText
-# from email.header import Header
-# body = "Some text"
-# subject = "» My Subject"                   
-# msg = MIMEText(body,'plain','utf-8')
-# msg['Subject'] = Header(subject,'utf-8')
-# text = msg.as_string()
     
     message = MIMEText(logContent,'plain','utf-8')
     message['From'] = Header(config.Application.Email.SENDER_ADDRESS,'utf-8')

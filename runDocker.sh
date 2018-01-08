@@ -9,7 +9,7 @@ set -e
 TAG=kart-dev-p3-esri
 
 ### Docker file
-DOCKER_FILE=./Dockerfile.esri
+DOCKER_FILE=./Dockerfile
 
 ### For development remap storage from Docker to host storage.
 HOST_CONFIG=${PWD}/configuration

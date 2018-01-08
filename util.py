@@ -1,4 +1,7 @@
 #from __future__ import absolute_import
+## TTD:
+### delete UtilMixin
+### remove CaptureStdoutLines
 
 import datetime
 import inspect
@@ -7,21 +10,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 import sys
-#from cStringIO import StringIO
 
 from io import StringIO
 
-
-
-#class UtilMixin(object):
-#    def methodName(self, depth=1):
-#        return inspect.currentframe(depth).f_code.co_name
-    
-# Python 3 depth argument unnecessary and caused "too many args" error.
-# class UtilMixin(object):
-#     def methodName(self):
-#         return inspect.currentframe().f_code.co_name
-
+# not useful, hard coded the method names
 class UtilMixin(object):
     def methodName(self):
         logger.debug("call methodName")
@@ -71,8 +63,7 @@ def stringContainsAllCharacters(string, characters):
 
 #def formatNameAndID(object):
 def formatNameAndID(objectA):
-    #return '"{}" ({})'.format(object.title, object.id)
-    return '"{}" ({})'.format(objectA.title, objectA.id)
+     return '"{}" ({})'.format(objectA.title, objectA.id)
 
 
 def elideString(string):
