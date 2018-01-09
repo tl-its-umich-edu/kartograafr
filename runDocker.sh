@@ -1,7 +1,7 @@
-# Script to build and run kartograafr in Docker locally (e.g. a laptop).
+# Development script to build and run kartograafr in Docker locally (e.g. a laptop).
 # This isn't used for OpenShift.
-# OpenShift builds will be a different process but, while the external
-# environment is different the same dockerfile should run in both locations.
+# OpenShift builds will be a different workflow, but inside docker
+# it doesn't matter if this is running on OSX or OpenShift.
 
 #set -x
 # Terminate if there is any error.
