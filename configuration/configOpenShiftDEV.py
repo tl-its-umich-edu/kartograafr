@@ -1,6 +1,7 @@
 ## Configuration for OpenShift dev version.  Production will need a separate version.
 
 import os
+import logging
 
 class Application(object):
     class Email(object):
@@ -18,6 +19,7 @@ class Application(object):
         COURSE_DIRECTORY = os.path.join(DIRECTORY, 'courses')
         MAIN_LOG_BASENAME = 'main'
         LOG_FILENAME_EXTENSION = '.log'
+        DEFAULT_LOG_LEVEL = logging.INFO
 
 class Canvas(object):
     API_BASE_URL = 'https://umich.instructure.com/api/v1/'
@@ -42,3 +44,4 @@ class ArcGIS(object):
         'username': '',
         'password': '',
     }
+

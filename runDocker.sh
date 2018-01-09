@@ -38,8 +38,8 @@ DOCKER_ARGS=" ${V_LOG} ${V_SECRETS} ${DOCKER_ENV}"
 
 ####
 
-docker build -f ${DOCKER_FILE} -t $TAG . \
-       docker run -it ${DOCKER_ARGS} --rm --name ${TAG}-run ${TAG} 2>&1
+   docker build -f ${DOCKER_FILE} -t $TAG . \
+&& docker run -it ${DOCKER_ARGS} --rm --name ${TAG}-run ${TAG} 2>&1
 
 echo "log directory: "
 echo -n "Done at: "

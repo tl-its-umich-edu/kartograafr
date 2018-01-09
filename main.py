@@ -6,6 +6,7 @@ import datetime
 import logging
 
 logger = logging.getLogger(__name__)
+loggingLevel = None
 
 import sys
 import os
@@ -45,8 +46,10 @@ RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
 options = None
 
 # Adjustable level to use for all logging
-loggingLevel = logging.DEBUG
-#loggingLevel = logging.INFO
+logger.error("loggingLevel: {}".format(loggingLevel))
+             
+if loggingLevel is None:
+    loggingLevel = config.Application.Logging.DEFAULT_LOG_LEVEL
 
 logger = None  # type: logging.Logger
 logFormatter = None  # type: logging.Formatter
