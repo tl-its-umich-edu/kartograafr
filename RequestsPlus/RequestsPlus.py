@@ -95,7 +95,6 @@ class RequestsPlus(util.UtilMixin, object):
         try:
             response = sessionRequestMethod(preparedAPIQueryURL, **kwargs)
         except requests.exceptions.RequestException as e:
-            #print( self._name + ' error: ' + e.message)
             print( self._name + ' error: ' + e) # Python 3 message doesn't exist anymore? 
 
         return response
