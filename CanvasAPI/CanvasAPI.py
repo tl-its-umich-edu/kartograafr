@@ -1,6 +1,8 @@
 from RequestsPlus import *
 from .models import CanvasObject
 
+import logging
+logger = logging.getLogger(__name__)
 
 class CanvasAPI(RequestsPlus):
     class _QueryURIs(object):
@@ -71,11 +73,11 @@ class CanvasAPI(RequestsPlus):
             outcomeObjectCount = len(outcomeObjects)
 
             if outcomeObjectCount == 0:
-                print('log: successful response, but no outcome returned for ID: {}.' \
+                logger.info('log: successful response, but no outcome returned for ID: {}.' 
                     .format(outcomeID))
             else:
                 if outcomeObjectCount > 1:
-                    print( 'log: successful response, but {} outcomes returned for ID: {}.' \
+                    logger.info( 'log: successful response, but {} outcomes returned for ID: {}.' \
                         .format(outcomeObjectCount, outcomeID))
 
                 outcomeObject = outcomeObjects.pop()

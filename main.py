@@ -149,8 +149,7 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
     # added to avoid undefined variable warning
     
     # fix up the user name format for ArcGIS users names
-    user = None 
-    changedArcGISGroupUsers = arcgisUM.formatUsersNamesForArcGIS(user, changedArcGISGroupUsers)
+    changedArcGISGroupUsers = arcgisUM.formatUsersNamesForArcGIS(changedArcGISGroupUsers)
     logger.info('Users to remove from ArcGIS: Group {}: ArcGIS Users: {}'.format(groupNameAndID, changedArcGISGroupUsers))
     logger.info('Users to add from Canvas course for ArcGIS: Group {}: Canvas Users: {}'.format(groupNameAndID, changedCourseUsers))
     
@@ -332,7 +331,7 @@ def closeAllCourseLogHandlers():
         courseLogHandler.close()
 
 
-def getCourseIDsFromConfigCoursePage(canvas, courseID, pageName):
+def getCourseIDsFromConfigCoursePage(canvas, courseID):
     """Read hand edited list of Canvas course ids to process from a specific Canvas course page."""
     
     VALID_COURSE_URL_REGEX = '^https://umich\.instructure\.com/courses/[0-9]+$'
@@ -512,7 +511,7 @@ def main():
                 '"{configCoursePageName}" of course {configCourseID}...'
                 .format(**locals()))
 
-    courseIDs = getCourseIDsFromConfigCoursePage(canvas, configCourseID, configCoursePageName)
+    courseIDs = getCourseIDsFromConfigCoursePage(canvas, configCourseID)
 
     if courseIDs is None:
         logger.warning('Warning: Config -> Course IDs not found in page '

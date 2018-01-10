@@ -83,6 +83,7 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
         gis_groups = arcGISAdmin.groups.search(searchString)
     except RuntimeError as exp:
         logger.error("arcGIS error finding group: {} exception: {}".format(searchString,exp))
+        return None
     
     if len(gis_groups) > 0:
         return gis_groups.pop()
@@ -102,11 +103,9 @@ def addCanvasUsersToGroup(instructorLog, group, courseUsers):
 
     logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
     # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name appended.
-    user="NULL"
-    arcGISFormatUsers = formatUsersNamesForArcGIS(user, courseUsers)
+    arcGISFormatUsers = formatUsersNamesForArcGIS(courseUsers)
     logger.debug("addCanvasUsersToGroup: formatted: {}".format(arcGISFormatUsers))
     
-    #results = group.addUsersToGroups(users=','.join(arcGISFormatUsers))
     results = group.add_users(arcGISFormatUsers)
     logger.debug("adding: results: {}".format(results))
 
@@ -153,6 +152,7 @@ def removeListOfUsersFromArcGISGroup(group, groupNameAndID, groupUsers):
             results = group.removeUsersFromGroup(','.join(groupUsers))
     except RuntimeError as exception:
             logger.error('Exception while removing users from ArcGIS group "{}": {}'.format(groupNameAndID, exception))
+            return None
             
     usersNotRemoved = results.get('notRemoved')
     """:type usersNotRemoved: list"""
@@ -178,14 +178,14 @@ def removeSomeExistingGroupMembers(groupTitle, group,instructorLog,groupUsers):
 
 def createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog):
     """Create a new ArgGIS group.  Return group and any creation messages."""
-   # group=None
+    group=None
     
     logger.info('Creating ArcGIS group: "{}"'.format(groupTitle))
     instructorLog += 'Creating ArcGIS group: "{}"\n'.format(groupTitle)
     try:
         group = arcGIS.groups.create(groupTitle,groupTags)
     except RuntimeError as exception:
-        logger.info('Exception while creating ArcGIS group "{}": {}'.format(groupTitle, exception))
+        logger.exception('Exception while creating ArcGIS group "{}": {}'.format(groupTitle, exception))
     
     return group, instructorLog
 
@@ -200,7 +200,7 @@ def lookForExistingArcGISGroup(arcGIS, groupTitle):
             
     return group
 
-def formatUsersNamesForArcGIS(user, userList):
+def formatUsersNamesForArcGIS(userList):
     """Convert list of Canvas user name to the format used in ArcGIS."""
     userList = [user + '_' + config.ArcGIS.ORG_NAME for user in userList]
     return userList
