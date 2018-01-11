@@ -1,5 +1,8 @@
 # The request types are now hard coded rather than obtained from variable.  
 
+import logging
+logger = logging.getLogger(__name__)
+
 import requests
 from url_normalize import url_normalize
 
@@ -89,7 +92,7 @@ class RequestsPlus(util.UtilMixin, object):
         try:
             response = sessionRequestMethod(preparedAPIQueryURL, **kwargs)
         except requests.exceptions.RequestException as e:
-            print( self._name + ' error: ' + e) # Python 3 message doesn't exist anymore? 
+            logger.info( self._name + ' error: ' + e) # Python 3 message doesn't exist anymore? 
 
         return response
 

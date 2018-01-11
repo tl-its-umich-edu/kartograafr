@@ -281,11 +281,11 @@ class CanvasAPI(RequestsPlus):
             courseCount = len(courseObjects)
 
             if courseCount == 0:
-                print ('log: successful response, but no outcome returned for ID: {}.' \
+                logger.info ('log: successful response, but no outcome returned for ID: {}.' \
                     .format(courseID))
             else:
                 if courseCount > 1:
-                    print ('log: successful response, but {} outcomes returned for ID: {}.' \
+                    logger.info ('log: successful response, but {} outcomes returned for ID: {}.' \
                         .format(courseCount, courseID))
 
                 course = courseObjects.pop()
