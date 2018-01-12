@@ -1,11 +1,16 @@
-# Script to build and run kartograafr in Docker locally (e.g. a laptop).
+# Development script to build and run kartograafr in Docker locally (e.g. a laptop).
 # This isn't used for OpenShift.
-# OpenShift builds will be a different process but, while the external
-# environment is different the same dockerfile should run in both locations.
+# OpenShift builds will be a different workflow, but inside docker
+# it doesn't matter if this is running on OSX or OpenShift.
 
 #set -x
 # Terminate if there is any error.
 set -e
+
+TAG=kart-dev-p3-esri
+
+### Docker file
+DOCKER_FILE=./Dockerfile
 
 # Setup a configuration type to identify the configuration files and the
 # Docker tag.
@@ -33,8 +38,8 @@ DOCKER_ARGS=" ${V_LOG} ${V_SECRETS} ${DOCKER_ENV}"
 
 ####
 
-docker build -t $TAG . \
-       && docker run -it ${DOCKER_ARGS} --rm --name ${TAG}-run ${TAG} 2>&1
+   docker build -f ${DOCKER_FILE} -t $TAG . \
+&& docker run -it ${DOCKER_ARGS} --rm --name ${TAG}-run ${TAG} 2>&1
 
 echo "log directory: "
 echo -n "Done at: "

@@ -1,22 +1,14 @@
 # For more information, see:
 # * https://www.python.org/dev/peps/pep-0496/
 
-# IntelliJ IDEA's Python plugin has a bug that causes it to always
-# report this Python version requirement as not satisfied.  It's
-# valid for pip.  IDEA can be told to ignore this requirement.
-# ArcREST's code requires Python 2.7.9 or greater, even though
-# its requirements.txt doesn't state it.
-#python >= 2.7.9
-# For now, the MiServer services can only provide up to Python 2.7.8,
-# but with great effort.  We will stick with 2.7.5 and hack our copy
-# of ArcREST to work with that.
-python >= 2.7.5
+# Changes required for converting kartograafr to python 3.
+# Switched to new ArcGIS library so old library was removed.
 
 python-dateutil
 requests
-urlnorm
+url-normalize 
 
-# Beautiful Soup 4 is usually intalled as the package "beautifulsoup4".
+# Beautiful Soup 4 is usually installed as the package "beautifulsoup4".
 # However, installing it by that name causes IntelliJ IDEA's Python
 # plugin to always report "Package requirement 'bs4' is not satisfied"
 # for every "import bs4" statement.  Installing the "bs4" package
@@ -24,8 +16,4 @@ urlnorm
 # See also: https://books.google.com/books?id=jgkGAAAAQAAJ&pg=PA160
 bs4
 
-
-# Esri's "arcrest_package" from PyPI has bugs and directory layout
-# problems. Instead, install from bugfix branch of TL fork and use
-# directory workaround.
-git+https://github.com/tl-its-umich-edu/ArcREST.git@umich-bugfixes#egg=arcrest&subdirectory=src
+#end

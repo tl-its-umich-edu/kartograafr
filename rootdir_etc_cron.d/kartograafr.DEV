@@ -2,6 +2,8 @@
 # Based on miserver version on 2017/11/29.
 
 SHELL=/bin/bash
+CONFIG_TYPE=DEV
+USE_CONDA_ENV=py35
 
 #MAILTO=miserver-arcgis-canvas@umich.edu
 
@@ -14,7 +16,8 @@ SHELL=/bin/bash
 #0 7,11,15,19 * * 1-5 /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
 
 # run frequently for testing
-*/5 * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+#*/5 * * * * /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+*/5 * * * * /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
 
 ### comment out prod schedule.
 # Weekdays: On all other hourly runs between 07:00 and 19:00, process

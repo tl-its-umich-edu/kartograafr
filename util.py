@@ -1,40 +1,21 @@
+# Converted to Python 3.
+# Make UtilMixin a no-op.
+# remove CaptureStdoutLines
+
 import datetime
 import inspect
 import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
-from cStringIO import StringIO
 
+from io import StringIO
 
+# Method names are now hard-coded so this is a no-op.
 class UtilMixin(object):
-    def methodName(self, depth=1):
-        return inspect.currentframe(depth).f_code.co_name
-
-
-class CaptureStdoutLines(list):
-    """
-    A context manager for capturing the lines sent to stdout as elements
-    of a list.  Useful for capturing important output printed by
-    poorly-designed API methods.
-
-    Example::
-        with CaptureStdoutLines() as output:
-            print('Norwegian blue parrot')
-        assert output == ['Norwegian blue parrot']
-
-        with CaptureStdoutLines(output) as output:
-            print('Venezuelan beaver cheese')
-        assert output == ['Norwegian blue parrot', 'Venezuelan beaver cheese']
-    """
-
-    def __enter__(self):
-        self._originalStdout = sys.stdout
-        sys.stdout = self._stdoutStream = StringIO()
-        return self
-
-    def __exit__(self, *args):
-        self.extend(self._stdoutStream.getvalue().splitlines())
-        sys.stdout = self._originalStdout
-
+    def methodName(self):
+        logger.debug("call methodName")
 
 def stringContainsAllCharacters(string, characters):
     """
@@ -52,9 +33,8 @@ def stringContainsAllCharacters(string, characters):
     return False not in [character in string for character in characters]
 
 
-def formatNameAndID(object):
-    return '"{}" ({})'.format(object.title, object.id)
-
+def formatNameAndID(objectA):
+     return '"{}" ({})'.format(objectA.title, objectA.id)
 
 def elideString(string):
     """

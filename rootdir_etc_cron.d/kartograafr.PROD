@@ -1,5 +1,9 @@
 # kartograafr: ArcGIS/Canvas integration
-# Created from miserver version on 2017/11/29.
+# Based on miserver version on 2017/11/29.
+
+SHELL=/bin/bash
+CONFIG_TYPE=PROD
+USE_CONDA_ENV=py35
 
 MAILTO=miserver-arcgis-canvas@umich.edu
 

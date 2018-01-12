@@ -1,1 +1,1 @@
-from CanvasAPI import *
+from . CanvasAPI import *
