@@ -110,7 +110,8 @@ function run_app {
     echo "APP_DIR: ${APP_DIR}"
     echo "PYTHONPATH: [${PYTHONPATH}]"
 
-    echo "Starting $0 with args "$@" at ",$(date) >> ${LOG_DIR}/cron.log 2>&1
+    echo "Starting $0 with args ["$@"] at ",$(date) >> ${LOG_DIR}/cron.log 2>&1
+    echo "Starting $0 with args ["$@"] at ",$(date)
 
     # Start program script and pass along any arguments supplied to the
     # startup script.

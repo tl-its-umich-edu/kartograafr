@@ -2,7 +2,7 @@
 ### set log level by property / env variable
 
 import argparse
-import datetime
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ logging.Handler.handleError = handleError
 #####
 
 TIMEZONE_UTC = dateutil.tz.tzutc()
-RUN_START_TIME = datetime.datetime.now(tz=TIMEZONE_UTC)
+RUN_START_TIME = datetime.now(tz=TIMEZONE_UTC)
 RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
 
 # Hold parsed options
@@ -466,6 +466,8 @@ def main():
     # Add logging to stdout for OpenShift.
     logToStdOut()
 
+    logger.info("Starting kartograafr")
+
     argumentParser = argparse.ArgumentParser()
     argumentParser.add_argument('--mail', '--email', dest='sendEmail',
                                 action=argparse._StoreTrueAction,
@@ -564,4 +566,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    kartStartTime = datetime.now()
+    try:
+        main()
+    except Exception as exp:
+        logger.error("abnormal ending: {}".format(exp))
+        traceback.print_exc(exp)
+    finally:
+        logger.info("Stopping kartograafr.  Duration: {} seconds".format(datetime.now()-kartStartTime))
