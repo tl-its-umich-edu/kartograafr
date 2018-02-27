@@ -2,17 +2,13 @@
 
 import datetime
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
 from arcgis.gis import GIS
 
 import dateutil.tz
-
-import config
-
-# secrets really is used during (import to change sensitive properties).
-import secrets  # @UnusedImport
 
 import util
 
@@ -90,7 +86,6 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
 
     return None
 
-
 def addCanvasUsersToGroup(instructorLog, group, courseUsers):
     """Add new users to the ArcGIS group.  """
     groupNameAndID = util.formatNameAndID(group)
@@ -102,8 +97,8 @@ def addCanvasUsersToGroup(instructorLog, group, courseUsers):
         return instructorLog
 
     logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
-    # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name appended.
-    arcGISFormatUsers = formatUsersNamesForArcGIS(courseUsers)
+
+    arcGISFormatUsers = courseUsers
     logger.debug("addCanvasUsersToGroup: formatted: {}".format(arcGISFormatUsers))
     
     results = group.add_users(arcGISFormatUsers)
@@ -124,8 +119,22 @@ def addCanvasUsersToGroup(instructorLog, group, courseUsers):
     logger.debug("aCUTG: instructorLog 3: [{}]".format(instructorLog))
 
     logger.info("addCanvasUsersToGroup: instructorLog: [{}]".format(instructorLog))
+    
     return instructorLog
 
+
+def createFolderForUser(arcGIS,folder_name,explicit_owner):
+    '''create a named folder for a named user'''
+
+    logger.info("Create folder [{}] for user [{}].".format(folder_name,explicit_owner))
+    
+    try:
+        folder_return = arcGIS.content.create_folder(folder=folder_name,owner=explicit_owner)
+    except  RuntimeError as rte:
+        logger.error("Exception: {} creating folder {} for user {}".format(rte,folder_name,explicit_owner))
+        return None
+
+    return folder_return
 
 def getCurrentArcGISMembers(group, groupNameAndID):
     groupAllMembers = {}
@@ -176,6 +185,7 @@ def removeSomeExistingGroupMembers(groupTitle, group,instructorLog,groupUsers):
         
     return instructorLog, results
 
+
 def createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog):
     """Create a new ArgGIS group.  Return group and any creation messages."""
     group=None
@@ -189,6 +199,7 @@ def createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog):
     
     return group, instructorLog
 
+
 # Get ArcGIS group with this title (if it exists)
 def lookForExistingArcGISGroup(arcGIS, groupTitle):
     """Find an ArgGIS group with a matching title."""
@@ -200,7 +211,38 @@ def lookForExistingArcGISGroup(arcGIS, groupTitle):
             
     return group
 
-def formatUsersNamesForArcGIS(userList):
+
+def formatUsersNamesForArcGIS(suffix,userList):
     """Convert list of Canvas user name to the format used in ArcGIS."""
-    userList = [user + '_' + config.ArcGIS.ORG_NAME for user in userList]
+    userList = [user + '_' + suffix for user in userList]
     return userList
+
+
+# get list of contents in a specific named users folders.
+def getFoldersForUser(gis,user_name):
+    '''get list of folders owned by this user'''
+    logger.debug("gFFU: gis: {} user_name: [{}]".format(gis,user_name))
+    user = gis.users.get(user_name)
+    folders = user.folders
+    logger.debug("gFFU: {}".format(folders))
+    return folders
+
+
+def deleteMatchingFoldersForUser(gis,user_name,match_string):
+    '''Check user's folders against string and delete if match.'''
+    logger.debug("dMFFU: gis: {} user_name: [{}] match_string: [{}]".format(gis,user_name,match_string))
+    folder_match = re.compile(match_string)
+    user = gis.users.get(user_name)
+    folders = user.folders
+    logger.debug("dMFFU: all folders {}".format(folders))
+ 
+    matching_folders = [x for x in folders if folder_match.search(x.get('title'))]
+    logger.info("deleting matching folders for user: {} folders: {}".format(user_name,matching_folders))
+    
+    for f in matching_folders:
+        logger.info("deleting folder: [{}] for user: [{}]".format(f.get('title'),user_name))
+        gis.content.delete_folder(f.get('title'), owner=user_name)
+        
+    # Returns nothing.  Assume errors are obvious.
+
+### end 

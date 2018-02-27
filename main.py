@@ -132,13 +132,15 @@ def minimizeUserChanges(groupUsers, courseUsers):
   
     return minGroupUsers, minCourseUsers
 
-def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, group):
+
+def updateGroupUsers(arcGIS,courseUserDictionary, course, instructorLog, groupTitle, assignment, group):
     """Add remove / users from group to match Canvas course"""
     
     # get the arcgis group members and the canvas course members.
     groupNameAndID = util.formatNameAndID(group)
     groupUsers = arcgisUM.getCurrentArcGISMembers(group, groupNameAndID)
     logger.debug('group users: {}'.format(groupUsers))
+    ## trim the user names
     groupUsersTrimmed = [re.sub('_\S+$', '', gu) for gu in groupUsers]
     logger.debug('All ArcGIS users currently in Group {}: ArcGIS Users: {}'.format(groupNameAndID, groupUsers))
     canvasCourseUsers = [user.login_id for user in courseUserDictionary[course.id] if user.login_id is not None]
@@ -149,20 +151,48 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
     # added to avoid undefined variable warning
     
     # fix up the user name format for ArcGIS users names
-    changedArcGISGroupUsers = arcgisUM.formatUsersNamesForArcGIS(changedArcGISGroupUsers)
+    changedArcGISGroupUsers = arcgisUM.formatUsersNamesForArcGIS(config.ArcGIS.ORG_NAME,changedArcGISGroupUsers)
     logger.info('Users to remove from ArcGIS: Group {}: ArcGIS Users: {}'.format(groupNameAndID, changedArcGISGroupUsers))
     logger.info('Users to add from Canvas course for ArcGIS: Group {}: Canvas Users: {}'.format(groupNameAndID, changedCourseUsers))
     
     # Now update only the users in the group that have changed.
     instructorLog, results = arcgisUM.removeSomeExistingGroupMembers(groupTitle, group, instructorLog, changedArcGISGroupUsers)  # @UnusedVariable
-    instructorLog = arcgisUM.addCanvasUsersToGroup(instructorLog, group, changedCourseUsers)
+    instructorLog = arcgisUM.addCanvasUsersToGroup(instructorLog, group, arcgisUM.formatUsersNamesForArcGIS(config.ArcGIS.ORG_NAME,changedCourseUsers))
+
+    ## make sure students have a folder for the assignment.
+    logger.info("uDG: course: {} assignment: {}".format(course,assignment))
+    student_assignment_folder_name = studentFolderTitle(course,assignment)
+    logger.info("uDG: student_assignment_folder_name: {}".format(student_assignment_folder_name))
+    # Create folders for all the members.  Just get the list straight from the group.
+    # That will be the right list with the users in a format known to ArcGIS.
+    updatedGroupUsers = arcgisUM.getCurrentArcGISMembers(group, groupNameAndID)
+    createFolderForUsers(arcGIS,updatedGroupUsers,student_assignment_folder_name)
     
     return instructorLog
+
+
+# Intent of having a one line method is so that all the title creation formatting is done in methods 
+# close together.  That make it easy to see what the formats are and easy to change them if necessary.
+
+def studentFolderTitle(course,assignment):
+    return'{}_{}_{}_{}'.format(course.name,assignment.name,course.id,assignment.id)
+
+
+def createFolderForUsers(arcGIS,users,folder_name):
+    # create folders for a group of students
+    for user in users:
+        arcgisUM.createFolderForUser(arcGIS,folder_name,user)
+
+
+def groupdTitle(assignment, course):
+    groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
+    return groupTitle
+
 
 def updateArcGISGroupForAssignment(arcGIS, courseUserDictionary, groupTags, assignment, course,instructorLog):
     """" Make sure there is a corresponding ArcGIS group for this Canvas course and assignment.  Sync up the ArcGIS members with the Canvas course members."""
      
-    groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
+    groupTitle = groupdTitle(assignment, course)
     
     group = arcgisUM.lookForExistingArcGISGroup(arcGIS, groupTitle)
      
@@ -175,8 +205,9 @@ def updateArcGISGroupForAssignment(arcGIS, courseUserDictionary, groupTags, assi
         instructorLog += 'Problem creating or updating ArcGIS group "{}"\n'.format(groupTitle)
     else: 
         # have a group.  Might be new or existing.
-        instructorLog = updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, group)
+        instructorLog = updateGroupUsers(arcGIS,courseUserDictionary, course, instructorLog, groupTitle, assignment, group)
         
+ 
     courseLogger = getCourseLogger(course.id, course.name)
     logger.debug("update group instructor log: {}".format(instructorLog))
     courseLogger.info(instructorLog)
@@ -242,7 +273,6 @@ def getMainLogFilePath(nameSuffix=None):
     )))
 
 
-
 def logToStdOut():
     """Have log output go to stdout in addition to any file."""
     root = logging.getLogger()
@@ -254,6 +284,7 @@ def logToStdOut():
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     ch.setFormatter(formatter)
     root.addHandler(ch)
+
 
 def getCourseLogger(courseID, courseName):
     """Set up course specific logger.
