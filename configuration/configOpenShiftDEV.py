@@ -20,7 +20,12 @@ class Application(object):
         MAIN_LOG_BASENAME = 'main'
         LOG_FILENAME_EXTENSION = '.log'
         DEFAULT_LOG_LEVEL = logging.INFO
-
+    
+    # Other settings.
+    class General(object):
+        # include any required whitespace.
+        ASGN_FOLDER_PREFIX = 'ASGN: '
+        
 class Canvas(object):
     API_BASE_URL = 'https://umich.instructure.com/api/v1/'
 

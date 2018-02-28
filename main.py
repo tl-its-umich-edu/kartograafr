@@ -175,7 +175,7 @@ def updateGroupUsers(arcGIS,courseUserDictionary, course, instructorLog, groupTi
 # close together.  That make it easy to see what the formats are and easy to change them if necessary.
 
 def studentFolderTitle(course,assignment):
-    return'{}_{}_{}_{}'.format(course.name,assignment.name,course.id,assignment.id)
+    return'{}{}_{}_{}_{}'.format(config.Application.General.ASGN_FOLDER_PREFIX,course.name,assignment.name,course.id,assignment.id)
 
 
 def createFolderForUsers(arcGIS,users,folder_name):

@@ -218,7 +218,7 @@ def formatUsersNamesForArcGIS(suffix,userList):
     return userList
 
 
-# get list of contents in a specific named users folders.
+# get list of folders for a specific user.
 def getFoldersForUser(gis,user_name):
     '''get list of folders owned by this user'''
     logger.debug("gFFU: gis: {} user_name: [{}]".format(gis,user_name))
