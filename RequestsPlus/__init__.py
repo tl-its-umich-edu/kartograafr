@@ -1,2 +1,2 @@
-from RequestsPlus import *
-from ResponseCollection import *
+from . RequestsPlus import *
+from . ResponseCollection import *

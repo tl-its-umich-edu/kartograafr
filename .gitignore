@@ -1,5 +1,14 @@
 *-.py
 
+*.bak
+.pydevproject
+*.P3
+
+/OPT
+secrets.py
+
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -89,3 +98,4 @@ ENV/
 
 # Rope project settings
 .ropeproject
+

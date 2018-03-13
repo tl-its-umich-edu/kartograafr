@@ -1,5 +1,10 @@
+# The request types are now hard coded rather than obtained from variable.  
+
+import logging
+logger = logging.getLogger(__name__)
+
 import requests
-import urlnorm
+from url_normalize import url_normalize
 
 import util
 from .ResponseCollection import *
@@ -66,7 +71,7 @@ class RequestsPlus(util.UtilMixin, object):
         if apiQueryURI.startswith(self.apiBaseURL):
             return apiQueryURI
 
-        return urlnorm.norm(self.apiBaseURL + '/' + apiQueryURI)
+        return url_normalize(self.apiBaseURL + '/' + apiQueryURI)
 
     def _sendRequest(self, httpMethod, apiQueryURI, **kwargs):
         """
@@ -87,7 +92,7 @@ class RequestsPlus(util.UtilMixin, object):
         try:
             response = sessionRequestMethod(preparedAPIQueryURL, **kwargs)
         except requests.exceptions.RequestException as e:
-            print self._name + ' error: ' + e.message
+            logger.info( self._name + ' error: ' + e) # Python 3 message doesn't exist anymore? 
 
         return response
 
@@ -122,7 +127,7 @@ class RequestsPlus(util.UtilMixin, object):
         :rtype: requests.Response
         """
 
-        response = self._sendRequest(self.methodName(), apiQueryURI, **kwargs)
+        response = self._sendRequest("get", apiQueryURI, **kwargs)
 
         if not response.ok:
             raise RuntimeError('Error {response.status_code} "{response.reason}" for request: {apiQueryURI}'
@@ -153,4 +158,4 @@ class RequestsPlus(util.UtilMixin, object):
         :rtype: requests.Response
         """
 
-        return self._sendRequest(self.methodName(), apiQueryURI, params=params, **kwargs)
+        return self._sendRequest("post", apiQueryURI, params=params, **kwargs)
