@@ -9,12 +9,15 @@ MAILTO=miserver-arcgis-canvas@umich.edu
 
 # Weekdays: At 07:00, 11:00, 15:00, and 19:00, process assignment groups and
 # send email to instructors
-0 7,11,15,19 * * 1-5 /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+#0 7,11,15,19 * * 1-5 /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
 
 # Weekdays: On all other hourly runs between 07:00 and 19:00, process
 # assignment groups without sending email to instructors
-0 8-10,12-14,16-18 * * 1-5 /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
+#0 8-10,12-14,16-18 * * 1-5 /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
 
 # Weekends: At 07:00, process assignment groups and send email to instructors
-0 7 * * 0,6 /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+#0 7 * * 0,6 /usr/local/apps/kartograafr/startup.sh --mail > /proc/1/fd/1 2>&1
+
+# Hourly, without email (Requested by knoop@umich.edu on 11 March 2018 at 19:29)
+0 * * * * /usr/local/apps/kartograafr/startup.sh > /proc/1/fd/1 2>&1
 #end
