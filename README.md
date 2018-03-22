@@ -1,6 +1,7 @@
 # kartograafr
 ArcGIS/Canvas data bridge
 
+
 ## About
 **_kartograafr_** — "kart-uh-GRAFF-fur", or in IPA: ['kɑr.toː.*ɣraːf.fər]
 
@@ -14,6 +15,12 @@ The kartograafr application...
 * reads part of its configuration (course IDs to be checked) from a page in a specific Canvas course used only for this purpose,
 * can be easily updated by changing its configuration course page in Canvas,
 * allows support staff to update its configuration via Canvas without requiring server sysadmin access
+
+## Conventions:
+* The git workflow is to use feature branches for development.
+* At UMich Kartograffr runs in Docker and for production we run Docker using OpenShift. See below for more information.
+* Configuration changes are done by checking new configuration into github, creating a new tag and build and redeploying in OpenShift.
+_Sensitive_ information is keep in OpenShift secrets and is not part of the build.
 
 ----------------
 
@@ -214,7 +221,14 @@ configured explicitly when invoking Docker.
 Applications that run under Docker are usually easy to run on
 OpenShift.  There will be configuration changes.  OpenShift
 configuration is beyond the scope of this readme.  The *runDocker.sh*
-script is a model for what OpenShift needs to be configured to supply.
+script is a model for what the OpenShift environment needs to supply for correct configuration.
+
+The version of of kartograafr to run is specified in the OpenShift build configuration.  
+It should point to a git tag for testing and production instances.
+
+A new build can be started with the "new build" button on the build configuration page.
+
+
 
 ------
 
