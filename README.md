@@ -223,7 +223,7 @@ OpenShift.  There will be configuration changes.  OpenShift
 configuration is beyond the scope of this readme.  The *runDocker.sh*
 script is a model for what the OpenShift environment needs to supply for correct configuration.
 
-The version of of kartograafr to run is specified in the OpenShift build configuration.  
+The version of kartograafr to run is specified in the OpenShift build configuration.  
 It should point to a git tag for testing and production instances.
 
 A new build can be started with the "new build" button on the build configuration page.
