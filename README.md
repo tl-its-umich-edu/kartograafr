@@ -18,7 +18,7 @@ The kartograafr application...
 
 ## Conventions:
 * The git workflow is to use feature branches for development.
-* At UMich Kartograffr runs in Docker and for production we run Docker using OpenShift. See below for more information.
+* At UMich kartograafr runs in Docker and for production we run Docker using OpenShift. See below for more information.
 * Configuration changes are done by checking new configuration into github, creating a new tag and build and redeploying in OpenShift.
 _Sensitive_ information is keep in OpenShift secrets and is not part of the build.
 
