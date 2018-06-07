@@ -1,11 +1,13 @@
 # Wrapper around calls to arcgis.  Helps with testing and future changes.
 
+import json
+from io import StringIO
 import datetime
 import logging
 
 logger = logging.getLogger(__name__)
 
-from arcgis.gis import GIS
+import arcgis
 
 import dateutil.tz
 
@@ -50,7 +52,7 @@ def getArcGISConnection(securityinfo):
         raise TypeError('Argument securityinfo type should be dict')
 
     try:
-        arcGIS = GIS(securityinfo['org_url'],
+        arcGIS = arcgis.GIS(securityinfo['org_url'],
                      securityinfo['username'],
                      securityinfo['password']);
     except RuntimeError as exp:
@@ -204,3 +206,12 @@ def formatUsersNamesForArcGIS(userList):
     """Convert list of Canvas user name to the format used in ArcGIS."""
     userList = [user + '_' + config.ArcGIS.ORG_NAME for user in userList]
     return userList
+
+def updateArcGISItem(item: arcgis.gis.Item, data: dict):
+    itemType = arcgis.gis.Item
+    assert isinstance(item, itemType), '"item" is not type "' + str(itemType) + '"'
+    dataType = dict
+    assert isinstance(data, dataType), '"data" is not type "' + str(dataType) + '"'
+
+    with StringIO(json.dumps(data)) as dataJson:
+        item.update(data = dataJson.read())
