@@ -3,19 +3,16 @@
 # remove CaptureStdoutLines
 
 import datetime
-import inspect
 import logging
 
 logger = logging.getLogger(__name__)
 
-import sys
-
-from io import StringIO
 
 # Method names are now hard-coded so this is a no-op.
 class UtilMixin(object):
     def methodName(self):
         logger.debug("call methodName")
+
 
 def stringContainsAllCharacters(string, characters):
     """
@@ -36,6 +33,7 @@ def stringContainsAllCharacters(string, characters):
 def formatNameAndID(objectA):
      return '"{}" ({})'.format(objectA.title, objectA.id)
 
+
 def elideString(string):
     """
     Return version of string with the middle removed.  This allows identifying
@@ -52,6 +50,7 @@ def elideString(string):
     string = string[0:chunkSize]+"..."+string[-chunkSize:]
 
     return string
+
 
 class Iso8601UTCTimeFormatter(logging.Formatter):
     """
