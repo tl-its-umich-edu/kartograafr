@@ -1,42 +1,28 @@
-##### Run kartograafr in Docker.
+# Use a Python base image
+FROM python:3.7
 
-### TTD (Things To Do)
-# - Pass in the CONFIG_TYPE from OpenShift environment variable.
-# - allow passing in the debug level as well.
+COPY requirements.txt /requirements.txt
+RUN pip install -r requirements.txt
 
-# - This container runs as root.  Cron may require further work if the root user is not allowed.
+# arcgis needs to be installed separately because of issues when including the requirement with a flag in
+# requirements.txt
+RUN pip install arcgis --no-deps
 
-# Need to build in anaconda environment
-FROM continuumio/anaconda3
+# apt-utils needs to be installed separately
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3-dev xmlsec1 cron && \
+    apt-get clean -y
 
-RUN apt-get update && apt-get install -y cron vim
+WORKDIR /kartograafr/
+COPY . /kartograafr/
 
-######### set timezone
-ENV TZ=America/New_York
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-#########
-
-# Create a new conda environment and then install arcgis python sdk in that environment.
-RUN conda create --name py35 python=3.5
-RUN /bin/bash -c "source activate py35 && conda install -c esri arcgis -y"
-
-WORKDIR /usr/src/app
-
-COPY requirements.txt ./
-# Do the pip install in chosen conda environment
-RUN /bin/bash -c "source activate py35 && pip install --no-cache-dir -r requirements.txt"
-
-COPY . /usr/local/apps/kartograafr
-RUN mkdir -p -v /var/log/kartograafr
+# Set up log file directories
 RUN mkdir -p -v /var/log/kartograafr/courses
 
-WORKDIR /usr/local/apps/kartograafr
+# Set the local time zone of the Docker image
+ENV TZ=America/New_York
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# The script is run by cron.  The final crontab and configuration files
-# are installed at startup time in the startup-cron-env script so that
-# a single build can be used in multiple environment.
+CMD ["/bin/bash", "start.sh"]
 
-# Run setup container and then run cron
-CMD ["/bin/bash","/usr/local/apps/kartograafr/startup-cron-env.sh"]
-
-#end
+# Done!
