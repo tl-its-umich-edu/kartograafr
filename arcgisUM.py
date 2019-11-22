@@ -1,31 +1,24 @@
-# Wrapper around calls to arcgis.  Helps with testing and future changes.
+# Wrapper around calls to arcgis. Helps with testing and future changes.
 
-import json
+# standard modules
+import datetime, logging, json, traceback
 from io import StringIO
-import datetime
-import logging
 
-logger = logging.getLogger(__name__)
+# third-party modules
+import arcgis, dateutil.tz
 
-import arcgis
-
-import dateutil.tz
-
-import config
-
-# secrets really is used during (import to change sensitive properties).
-import secrets  # @UnusedImport
-
+# local modules
+from configuration import config
 import util
 
-##### Improved code tracebacks for exceptions
-import traceback
 
+# global variables and logging setup
 def handleError(self, record):  # @UnusedVariable
     traceback.print_stack()
-    
+
+
+logger = logging.getLogger(__name__)
 logging.Handler.handleError = handleError
-#####
 
 TIMEZONE_UTC = dateutil.tz.tzutc()
 RUN_START_TIME = datetime.datetime.now(tz=TIMEZONE_UTC)
@@ -37,6 +30,7 @@ options = None
 # TODO: required in this module?
 courseLogHandlers = dict()
 courseLoggers = dict()
+
 
 def getArcGISConnection(securityinfo):
     """
@@ -60,6 +54,7 @@ def getArcGISConnection(securityinfo):
         raise RuntimeError(str('ArcGIS connection invalid: {}'.format(exp)))
     
     return arcGIS
+
 
 def getArcGISGroupByTitle(arcGISAdmin, title):
     """
@@ -141,6 +136,7 @@ def getCurrentArcGISMembers(group, groupNameAndID):
     """:type groupUsers: list"""
     return groupUsers
 
+
 def removeListOfUsersFromArcGISGroup(group, groupNameAndID, groupUsers):
     """Remove only listed users from ArcGIS group."""
 
@@ -149,12 +145,11 @@ def removeListOfUsersFromArcGISGroup(group, groupNameAndID, groupUsers):
         return None
 
     logger.info('ArcGIS Users to be removed from ArcGIS Group [{}] [{}]'.format(groupNameAndID, ','.join(groupUsers)))
-    results = None
     try:
-            results = group.removeUsersFromGroup(','.join(groupUsers))
+        results = group.removeUsersFromGroup(','.join(groupUsers))
     except RuntimeError as exception:
-            logger.error('Exception while removing users from ArcGIS group "{}": {}'.format(groupNameAndID, exception))
-            return None
+        logger.error('Exception while removing users from ArcGIS group "{}": {}'.format(groupNameAndID, exception))
+        return None
             
     usersNotRemoved = results.get('notRemoved')
     """:type usersNotRemoved: list"""
@@ -178,6 +173,7 @@ def removeSomeExistingGroupMembers(groupTitle, group,instructorLog,groupUsers):
         
     return instructorLog, results
 
+
 def createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog):
     """Create a new ArgGIS group.  Return group and any creation messages."""
     group=None
@@ -191,6 +187,7 @@ def createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog):
     
     return group, instructorLog
 
+
 # Get ArcGIS group with this title (if it exists)
 def lookForExistingArcGISGroup(arcGIS, groupTitle):
     """Find an ArgGIS group with a matching title."""
@@ -202,10 +199,12 @@ def lookForExistingArcGISGroup(arcGIS, groupTitle):
             
     return group
 
+
 def formatUsersNamesForArcGIS(userList):
     """Convert list of Canvas user name to the format used in ArcGIS."""
     userList = [user + '_' + config.ArcGIS.ORG_NAME for user in userList]
     return userList
+
 
 def updateArcGISItem(item: arcgis.gis.Item, data: dict):
     itemType = arcgis.gis.Item
