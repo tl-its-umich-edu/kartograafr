@@ -8,11 +8,6 @@ RUN pip install -r requirements.txt
 # requirements.txt
 RUN pip install arcgis --no-deps
 
-# apt-utils needs to be installed separately
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3-dev xmlsec1 cron && \
-    apt-get clean -y
-
 WORKDIR /kartograafr/
 COPY . /kartograafr/
 
