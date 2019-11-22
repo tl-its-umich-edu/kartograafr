@@ -11,7 +11,9 @@ class Application(object):
     class Email(object):
         DEBUG_LEVEL = False
         SMTP_SERVER = ENV.get("SMTP Server", "localhost:1025")
-        SENDER_ADDRESS = '"ArcGIS-Canvas Service Dev" <kartograafr-service-dev@umich.edu>'
+        SENDER_ADDRESS = ENV.get(
+            "Email Sender Address", '"ArcGIS-Canvas Service Dev" <kartograafr-service-dev@umich.edu>'
+        )
         RECIPIENT_AT_DOMAIN = "@umich.edu"
         SUBJECT = 'ArcGIS-Canvas logs for course ID {courseID} (Dev)'
 
@@ -22,28 +24,26 @@ class Application(object):
         COURSE_DIRECTORY = os.path.join(DIRECTORY, 'courses')
         MAIN_LOG_BASENAME = 'main'
         LOG_FILENAME_EXTENSION = '.log'
-        DEFAULT_LOG_LEVEL = ENV.get("Logging Level", "WARNING")
+        DEFAULT_LOG_LEVEL = ENV.get("Logging Level", "INFO")
 
 
 class Canvas(object):
-    BASE_URL = ENV.get("Canvas Base URL", "https://umich.instructure.com")
+    BASE_URL = ENV.get("Canvas Base URL", "https://umich.test.instructure.com")
     API_BASE_URL = BASE_URL + '/api/v1/'
     API_AUTHZ_TOKEN = ENV.get("Canvas API Token", "")
     ACCOUNT_ID = ENV.get("Canvas Account ID", 306)  # Default is UM Canvas Test Account
     TARGET_OUTCOME_ID = 4353  # Canvas Outcome created for Kartograafr
-    CONFIG_COURSE_ID = ENV.get("Canvas Config Course ID", 138596)
-    CONFIG_COURSE_PAGE_NAME = 'course-ids'
+    CONFIG_COURSE_ID = ENV.get("Canvas Config Course ID", 366944)
+    CONFIG_COURSE_PAGE_NAME = 'course-ids'  # Not case-sensitive
     COURSE_ID_SET = set((
         # Used if IDs are not found in the configuration course page defined above
-        85489,  # Practice Course for Lance Sloan (LANCE PRACTICE)
-        114488,  # First ArcGIS Course (ARCGIS-1)
-        135885,  # Another ArcGIS Course (ARCGIS-2)
+        366945,  # Practice Course for Sam Sciolla (Kartograafr Test Course)
     ))
 
 
 class ArcGIS(object):
     # ORG_NAME for server URL (see below) and appended to ArcGIS usernames (i.e., "user_org")
-    ORG_NAME = ENV.get("ArcGIS Org Name", "umich")
+    ORG_NAME = ENV.get("ArcGIS Org Name", "devumich")
     SECURITY_INFO = {
         'security_type': 'Portal',  # Default: "Portal"; "Required option" by bug in some ArcREST versions
         'org_url': 'https://{}.maps.arcgis.com'.format(ORG_NAME),
