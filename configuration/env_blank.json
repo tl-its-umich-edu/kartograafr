@@ -1,0 +1,12 @@
+{
+  "Logging Level": "INFO",
+  "SMTP Server": "",
+  "Email Sender Address": "",
+  "Canvas Base URL": "",
+  "Canvas API Token": "",
+  "Canvas Config Course ID": 0,
+  "Canvas Account ID": 0,
+  "ArcGIS Org Name": "",
+  "ArcGIS Username": "",
+  "ArcGIS Password": ""
+}
