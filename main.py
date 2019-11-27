@@ -19,9 +19,17 @@ def handleError(self, record):  # @UnusedVariable
     traceback.print_stack()
 
 
-logger = logging.getLogger(__name__)
-loggingLevel = None
 logging.Handler.handleError = handleError
+
+# Adjustable level to use for all logging
+logger = logging.getLogger(__name__)
+loggingLevel = config.Application.Logging.DEFAULT_LOG_LEVEL
+logger.error("loggingLevel: {}".format(loggingLevel))
+
+logger = None  # type: logging.Logger
+logFormatter = None  # type: logging.Formatter
+courseLogHandlers = dict()
+courseLoggers = dict()
 
 TIMEZONE_UTC = dateutil.tz.tzutc()
 RUN_START_TIME = datetime.now(tz=TIMEZONE_UTC)
@@ -29,17 +37,6 @@ RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
 
 # Hold parsed options
 options = None
-
-# Adjustable level to use for all logging
-logger.error("loggingLevel: {}".format(loggingLevel))
-             
-if loggingLevel is None:
-    loggingLevel = config.Application.Logging.DEFAULT_LOG_LEVEL
-
-logger = None  # type: logging.Logger
-logFormatter = None  # type: logging.Formatter
-courseLogHandlers = dict()
-courseLoggers = dict()
 
 
 def getCanvasInstance():
