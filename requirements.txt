@@ -1,19 +1,7 @@
-# For more information, see:
-# * https://www.python.org/dev/peps/pep-0496/
+# Note: this does not include arcgis, which needs to be installed manually when using virtualenv.
+# Use the following command: pip install arcgis --no-deps
 
-# Changes required for converting kartograafr to python 3.
-# Switched to new ArcGIS library so old library was removed.
-
-python-dateutil
-requests
-url-normalize 
-
-# Beautiful Soup 4 is usually installed as the package "beautifulsoup4".
-# However, installing it by that name causes IntelliJ IDEA's Python
-# plugin to always report "Package requirement 'bs4' is not satisfied"
-# for every "import bs4" statement.  Installing the "bs4" package
-# "stub" instead gets around this problem.
-# See also: https://books.google.com/books?id=jgkGAAAAQAAJ&pg=PA160
-bs4
-
-#end
+bs4==0.0.1
+python-dateutil==2.8.1
+requests==2.22.0
+url-normalize==1.4.1

@@ -1,42 +1,35 @@
-## TTD:
-### set log level by property / env variable
-
-import argparse
+# standard modules
+import argparse, logging, os, re, sys, traceback
 from datetime import datetime
-import logging
 
-logger = logging.getLogger(__name__)
-loggingLevel = None
-
-import sys
-import os
-import re
-
-import arcgisUM
-
-import dateutil.parser
-import dateutil.tz
-
+# third-party modules
 from bs4 import BeautifulSoup
 from bs4.builder._htmlparser import HTMLParserTreeBuilder
+import dateutil.parser, dateutil.tz
 
-import config
-
+# local modules
+import arcgisUM
 from CanvasAPI import CanvasAPI
-
-# The secrets module really is used during import (to change sensitive
-# properties). 
-import secrets #@UnusedImport
-
+from configuration import config
 import util
 
-##### Improved code tracebacks for exceptions
-import traceback
 
+# global variables and logging setup
 def handleError(self, record):  # @UnusedVariable
     traceback.print_stack()
+
+
 logging.Handler.handleError = handleError
-#####
+
+# Adjustable level to use for all logging
+logger = logging.getLogger(__name__)
+loggingLevel = config.Application.Logging.DEFAULT_LOG_LEVEL
+logger.error("loggingLevel: {}".format(loggingLevel))
+
+logger = None  # type: logging.Logger
+logFormatter = None  # type: logging.Formatter
+courseLogHandlers = dict()
+courseLoggers = dict()
 
 TIMEZONE_UTC = dateutil.tz.tzutc()
 RUN_START_TIME = datetime.now(tz=TIMEZONE_UTC)
@@ -45,21 +38,10 @@ RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
 # Hold parsed options
 options = None
 
-# Adjustable level to use for all logging
-logger.error("loggingLevel: {}".format(loggingLevel))
-             
-if loggingLevel is None:
-    loggingLevel = config.Application.Logging.DEFAULT_LOG_LEVEL
-
-logger = None  # type: logging.Logger
-logFormatter = None  # type: logging.Formatter
-courseLogHandlers = dict()
-courseLoggers = dict()
 
 def getCanvasInstance():
     return CanvasAPI(config.Canvas.API_BASE_URL,
                      authZToken=config.Canvas.API_AUTHZ_TOKEN)
-
 
 
 def getCourseIDsWithOutcome(canvas, courseIDs, outcome):
@@ -119,6 +101,7 @@ def computeListDifferences(leftList, rightList):
 # Look at lists of users already in group and those currently in the course and return new lists
 # of only the users that need to be added and need to be removed, so unchanged people remain untouched.
 
+
 def minimizeUserChanges(groupUsers, courseUsers):
     """Compute minimal changes to ArgGIS group membership so that members who don't need to be changed aren't changed."""
     logger.debug('groupUsers input: {}'.format(groupUsers))
@@ -131,6 +114,7 @@ def minimizeUserChanges(groupUsers, courseUsers):
     logger.info('changedArcGISGroupUsers: {} changedCanvasUsers: {} unchanged Users {}'.format(minGroupUsers,minCourseUsers,unchangedUsers))
   
     return minGroupUsers, minCourseUsers
+
 
 def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, group):
     """Add remove / users from group to match Canvas course"""
@@ -158,6 +142,7 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
     instructorLog = arcgisUM.addCanvasUsersToGroup(instructorLog, group, changedCourseUsers)
     
     return instructorLog
+
 
 def updateArcGISGroupForAssignment(arcGIS, courseUserDictionary, groupTags, assignment, course,instructorLog):
     """" Make sure there is a corresponding ArcGIS group for this Canvas course and assignment.  Sync up the ArcGIS members with the Canvas course members."""
@@ -242,18 +227,17 @@ def getMainLogFilePath(nameSuffix=None):
     )))
 
 
-
 def logToStdOut():
     """Have log output go to stdout in addition to any file."""
     root = logging.getLogger()
     root.setLevel(loggingLevel)
  
     ch = logging.StreamHandler(sys.stdout)
-    #ch.setLevel(logging.DEBUG)
     ch.setLevel(loggingLevel)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     ch.setFormatter(formatter)
     root.addHandler(ch)
+
 
 def getCourseLogger(courseID, courseName):
     """Set up course specific logger.
@@ -331,18 +315,21 @@ def closeAllCourseLogHandlers():
         courseLogHandler.close()
 
 
-def getCourseIDsFromConfigCoursePage(canvas, courseID):
+def getCourseIDsFromConfigCoursePage(canvas, courseID, config_course_page_name):
     """Read hand edited list of Canvas course ids to process from a specific Canvas course page."""
-    
-    VALID_COURSE_URL_REGEX = '^https://umich\.instructure\.com/courses/[0-9]+$'
-    pages = canvas.getCoursesPagesByNameObjects(courseID, 'course-ids')  # type: list of CanvasObject
-    courseIDs = None
 
+    regex_base = config.Canvas.BASE_URL.replace(".", "\\.")
+    valid_course_url_regex = '^{}/courses/[0-9]+$'.format(regex_base)
+    pages = canvas.getCoursesPagesByNameObjects(courseID, config_course_page_name)  # type: list of CanvasObject
+
+    courseIDs = None
     if pages:
         configCoursePage = pages.pop()
         configCoursePageTree = BeautifulSoup(configCoursePage.body, builder=HTMLParserTreeBuilder())
 
-        courseURLs = set([a['href'] for a in configCoursePageTree.find_all('a', href=re.compile(VALID_COURSE_URL_REGEX))])
+        courseURLs = set(
+            [a['href'] for a in configCoursePageTree.find_all('a', href=re.compile(valid_course_url_regex))]
+        )
         if courseURLs:
             courseIDs = [int(url.split('/').pop()) for url in courseURLs]
 
@@ -435,8 +422,7 @@ def emailCourseLogs(courseInstructors):
     logger.info('Preparing to send email to instructors...')
 
     for courseID, instructors in list(courseInstructors.items()):
-        recipients = [instructor.sis_login_id +
-                                            config.Application.Email.RECIPIENT_AT_DOMAIN for instructor in instructors]
+        recipients = [instructor.login_id + config.Application.Email.RECIPIENT_AT_DOMAIN for instructor in instructors]
         emailLogForCourseID(courseID, recipients)
 
 
@@ -494,7 +480,7 @@ def main():
                 .format('Sending' if options.sendEmail else 'Not sending'))
 
     canvas = getCanvasInstance()
-    arcGIS = arcgisUM.getArcGISConnection(config.ArcGIS.SECURITYINFO)
+    arcGIS = arcgisUM.getArcGISConnection(config.ArcGIS.SECURITY_INFO)
 
     outcomeID = config.Canvas.TARGET_OUTCOME_ID
     logger.info('Config -> Outcome ID to find: {}'.format(outcomeID))
@@ -513,7 +499,7 @@ def main():
                 '"{configCoursePageName}" of course {configCourseID}...'
                 .format(**locals()))
 
-    courseIDs = getCourseIDsFromConfigCoursePage(canvas, configCourseID)
+    courseIDs = getCourseIDsFromConfigCoursePage(canvas, configCourseID, configCoursePageName)
 
     if courseIDs is None:
         logger.warning('Warning: Config -> Course IDs not found in page '
@@ -562,7 +548,7 @@ def main():
 
     renameLogForCourseID(None)
     
-    logger.info("current kartograaf run finished.")
+    logger.info("Finished current kartograafr run.")
 
 
 if __name__ == '__main__':
@@ -573,4 +559,4 @@ if __name__ == '__main__':
         logger.error("abnormal ending: {}".format(exp))
         traceback.print_exc(exp)
     finally:
-        logger.info("Stopping kartograafr.  Duration: {} seconds".format(datetime.now()-kartStartTime))
+        logger.info("Stopping kartograafr. Duration: {} seconds".format(datetime.now()-kartStartTime))
