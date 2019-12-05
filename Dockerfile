@@ -11,7 +11,7 @@ RUN pip install arcgis --no-deps
 WORKDIR /kartograafr/
 COPY . /kartograafr/
 
-# Set up log file directories
+# Set up log file directory
 RUN mkdir -p -v /var/log/kartograafr
 
 # Set the local time zone of the Docker image
