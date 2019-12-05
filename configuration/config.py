@@ -1,7 +1,7 @@
 import json, os
 
 try:
-    with open("configuration/env.json") as env_file:
+    with open("configuration/secrets/env.json") as env_file:
         ENV = json.load(env_file)
 except FileNotFoundError as fnfe:
     print("Default config file was not found. This is normal for the build; it should be provided for operation.")
