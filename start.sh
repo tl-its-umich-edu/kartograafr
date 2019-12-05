@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# This simple shell script controls whether Kartograafr sends logs by email or not when the application
-# is run within a container environment (e.g. OpenShift). If log emails are wanted, SEND_EMAIL
-# should be set using the Deployment Config (.yaml).
+# This simple shell script performs a couple basic steps to set up the application to run in a container environment
+# (e.g. OpenShift). First it sets up a courses directory inside the mounted log volume (if necessary). Then it
+# determines whether Kartograafr will send logs by email or not; if log emails are wanted, SEND_EMAIL should be set
+# using the Deployment Config (.yaml).
+
+mkdir -p /var/log/kartograafr/courses
 
 if [ "${SEND_EMAIL}" == "True" ]; then
   echo "Running Kartograafr WITH email flag"
