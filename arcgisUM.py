@@ -102,14 +102,17 @@ def addCanvasUsersToGroup(instructorLog, group, courseUsers):
     # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name appended.
     arcGISFormatUsers = formatUsersNamesForArcGIS(courseUsers)
     logger.debug("addCanvasUsersToGroup: formatted: {}".format(arcGISFormatUsers))
-    
-    results = group.add_users(arcGISFormatUsers)
-    logger.debug("adding: results: {}".format(results))
 
-    usersNotAdded = results.get('notAdded')
-    """:type usersNotAdded: list"""
     usersCount = len(arcGISFormatUsers)
-    usersCount -= len(usersNotAdded) if usersNotAdded else 0
+    listsOfFormattedUsernames = util.splitListIntoSublists(arcGISFormatUsers, 20)
+
+    usersNotAdded = []
+    for listOfFormattedUsernames in listsOfFormattedUsernames:
+        results = group.add_users(listOfFormattedUsernames)
+        logger.debug("adding: results: {}".format(results))
+        usersNotAdded += results.get('notAdded')
+
+    usersCount -= len(usersNotAdded)
     logger.debug("usersCount: {}".format(usersCount))
     logger.debug("aCUTG: instructorLog 1: [{}]".format(instructorLog))
     instructorLog += 'Number of users added to group: [{}]\n\n'.format(usersCount)
