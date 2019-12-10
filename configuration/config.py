@@ -20,7 +20,7 @@ class Application(object):
     # Directory path for logging may depend on the platform. This setup is for Docker.
     class Logging(object):
         MAIN_LOGGER_NAME = 'kartograafr'
-        DIRECTORY = '/var/log/kartograafr'
+        DIRECTORY = '/tmp/log/kartograafr'
         COURSE_DIRECTORY = os.path.join(DIRECTORY, 'courses')
         MAIN_LOG_BASENAME = 'main'
         LOG_FILENAME_EXTENSION = '.log'

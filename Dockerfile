@@ -12,7 +12,7 @@ WORKDIR /kartograafr/
 COPY . /kartograafr/
 
 # Set up log file directories
-RUN mkdir -p -v /var/log/kartograafr/courses
+RUN mkdir -p -v /tmp/log/kartograafr/courses
 
 # Set the local time zone of the Docker image
 ENV TZ=America/New_York
