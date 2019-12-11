@@ -20,6 +20,9 @@ def handleError(self, record):  # @UnusedVariable
     traceback.print_stack()
 
 
+# Create log file directories (if necessary)
+os.makedirs(config.Application.Logging.DIRECTORY + "/courses", exist_ok=True)
+
 logging.Handler.handleError = handleError
 
 # Adjustable level to use for all logging
