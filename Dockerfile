@@ -11,9 +11,6 @@ RUN pip install arcgis --no-deps
 WORKDIR /kartograafr/
 COPY . /kartograafr/
 
-# Set up log file directories
-RUN mkdir -p -v /var/log/kartograafr/courses
-
 # Set the local time zone of the Docker image
 ENV TZ=America/New_York
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone

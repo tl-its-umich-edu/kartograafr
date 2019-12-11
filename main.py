@@ -1,6 +1,7 @@
 # standard modules
-import argparse, logging, os, re, sys, traceback
+import argparse, logging, os, re, smtplib, sys, traceback
 from datetime import datetime
+from email.message import EmailMessage
 
 # third-party modules
 from bs4 import BeautifulSoup
@@ -18,6 +19,9 @@ import util
 def handleError(self, record):  # @UnusedVariable
     traceback.print_stack()
 
+
+# Create log file directories (if necessary)
+os.makedirs(config.Application.Logging.DIRECTORY + "/courses", exist_ok=True)
 
 logging.Handler.handleError = handleError
 
@@ -359,10 +363,6 @@ def renameLogForCourseID(courseID=-1):
 def emailLogForCourseID(courseID, recipients):
     """Email course information to a list of multiple recipients."""
 
-    import smtplib
-    from email.mime.text import MIMEText
-    from email.header import Header
-
     if not isinstance(recipients, list):
         recipients = [recipients]
 
@@ -376,20 +376,20 @@ def emailLogForCourseID(courseID, recipients):
         return
 
     try:
-        READ_BINARY_MODE = 'rb'
-        logfile = open(getCourseLogFilePath(courseID), mode=READ_BINARY_MODE)
+        logfile = open(getCourseLogFilePath(courseID))
         logContent = logfile.read()
         logfile.close()
     except Exception as exception:
         logger.warning('Exception while trying to read logfile for course {courseID}: {exception}'
                        .format(**locals()))
         return
-    
-    message = MIMEText(logContent,'plain','utf-8')
-    message['From'] = Header(config.Application.Email.SENDER_ADDRESS,'utf-8')
-    message['To'] = Header(', '.join(recipients),'utf-8')
-    message['Subject'] = Header(config.Application.Email.SUBJECT.format(**locals()),'utf-8')
-      
+
+    message = EmailMessage()
+    message['From'] = config.Application.Email.SENDER_ADDRESS
+    message['To'] = ', '.join(recipients)
+    message['Subject'] = config.Application.Email.SUBJECT.format(**locals())
+    message.set_content(logContent)
+
     if options.printEmail is True:
         logger.info("email message: {}".format(message))
     else:
