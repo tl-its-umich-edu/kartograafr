@@ -53,6 +53,7 @@ def elideString(string):
 
 
 def splitListIntoSublists(origList, sublistLength=10):
+    """Transform a given list into a list of lists of a specified length"""
     sublists = [origList[x:x + sublistLength] for x in range(0, len(origList), sublistLength)]
     return sublists
 

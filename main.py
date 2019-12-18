@@ -145,7 +145,7 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
     instructorLog += "Group: {} \n\n".format(groupNameAndID)
     instructorLog = arcgisUM.removeCanvasUsersFromGroup(group, changedArcGISGroupUsers, instructorLog)
     instructorLog = arcgisUM.addCanvasUsersToGroup(group, changedCourseUsers, instructorLog)
-    instructorLog += "\n- - - \n"
+    instructorLog += "\n- - -\n"
 
     return instructorLog
 
