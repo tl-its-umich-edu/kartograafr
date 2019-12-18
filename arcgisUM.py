@@ -96,7 +96,7 @@ def addCanvasUsersToGroup(group, courseUsers, instructorLog):
     
     if len(courseUsers) == 0:
         logger.info('No new users to add to ArcGIS Group {}'.format(groupNameAndID))
-        instructorLog += "No new users were added.\n"
+        instructorLog += "No new users were added.\n\n"
         return instructorLog
 
     logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
@@ -126,7 +126,7 @@ def addCanvasUsersToGroup(group, courseUsers, instructorLog):
             ['* ' + userNotAdded for userNotAdded in usersNotAdded]
         ) + '\n'
 
-    logger.info("addCanvasUsersToGroup: instructorLog: [{}]".format(instructorLog))
+    logger.debug("addCanvasUsersToGroup: instructorLog: [{}]".format(instructorLog))
     return instructorLog
 
 
@@ -138,7 +138,7 @@ def removeCanvasUsersFromGroup(group, groupUsers, instructorLog):
 
     if not groupUsers:
         logger.info('Existing ArcGIS group {} does not have users to remove.'.format(groupNameAndID))
-        instructorLog += "No past users were removed.\n"
+        instructorLog += "No past users were removed.\n\n"
         return instructorLog
 
     logger.info('Removing past Canvas users from ArcGIS Group [{}] [{}]'.format(groupNameAndID, ','.join(groupUsers)))
@@ -165,6 +165,7 @@ def removeCanvasUsersFromGroup(group, groupUsers, instructorLog):
             ['* ' + userNotRemoved for userNotRemoved in usersNotRemoved]
         ) + '\n'
 
+    logger.debug("removeCanvasUsersFromGroup: instructorLog: [{}]".format(instructorLog))
     return instructorLog
 
 
