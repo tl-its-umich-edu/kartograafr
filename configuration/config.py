@@ -31,7 +31,6 @@ class Canvas(object):
     BASE_URL = ENV.get("Canvas_Base_URL", "https://umich.test.instructure.com")
     API_BASE_URL = BASE_URL + '/api/v1/'
     API_AUTHZ_TOKEN = ENV.get("Canvas_API_Token", "")
-    ACCOUNT_ID = ENV.get("Canvas_Account_ID", 306)  # Default is UM Canvas Test Account
     TARGET_OUTCOME_ID = 4353  # Canvas Outcome created for kartograafr
     CONFIG_COURSE_ID = ENV.get("Canvas_Config_Course_ID", 366944)
     CONFIG_COURSE_PAGE_NAME = 'course-ids'  # Not case-sensitive
