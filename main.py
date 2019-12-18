@@ -142,9 +142,11 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
     logger.info('Users to add from Canvas course for ArcGIS: Group {}: Canvas Users: {}'.format(groupNameAndID, changedCourseUsers))
     
     # Now update only the users in the group that have changed.
-    instructorLog, results = arcgisUM.removeSomeExistingGroupMembers(groupTitle, group, instructorLog, changedArcGISGroupUsers)  # @UnusedVariable
-    instructorLog = arcgisUM.addCanvasUsersToGroup(instructorLog, group, changedCourseUsers)
-    
+    instructorLog += "Group: {} \n\n".format(groupNameAndID)
+    instructorLog = arcgisUM.removeCanvasUsersFromGroup(group, changedArcGISGroupUsers, instructorLog)
+    instructorLog = arcgisUM.addCanvasUsersToGroup(group, changedCourseUsers, instructorLog)
+    instructorLog += "\n- - - \n"
+
     return instructorLog
 
 
