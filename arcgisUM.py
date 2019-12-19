@@ -2,6 +2,7 @@
 
 # standard modules
 import datetime, logging, json, traceback
+from operator import itemgetter
 from io import StringIO
 
 # third-party modules
@@ -23,6 +24,21 @@ logging.Handler.handleError = handleError
 TIMEZONE_UTC = dateutil.tz.tzutc()
 RUN_START_TIME = datetime.datetime.now(tz=TIMEZONE_UTC)
 RUN_START_TIME_FORMATTED = RUN_START_TIME.strftime('%Y%m%d%H%M%S')
+
+MODIFY_MODES = {
+    "add": {
+        "verb": "add",
+        "verbStem": "add",
+        "verbPrep": "to",
+        "methodName": "add_users"
+    },
+    "remove": {
+        "verb": "remove",
+        "verbStem": "remov",
+        "verbPrep": "from",
+        "methodName": "remove_users"
+    }
+}
 
 # Hold parsed options
 options = None
@@ -88,39 +104,61 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
     return None
 
 
-def addCanvasUsersToGroup(instructorLog, group, courseUsers):
-    """Add new users to the ArcGIS group.  """
+def modifyUsersInGroup(group: object, users: list, mode: str, instructorLog: str):
+    """Depending on the mode, add or remove users from the given ArcGIS group"""
+
+    logger.info("modifyUsersInGroup: enter")
     groupNameAndID = util.formatNameAndID(group)
-    
-    logger.info("addCanvasUsersToGroup: enter")
-    
-    if len(courseUsers) == 0:
-        logger.info('No new users to add to ArcGIS Group {}'.format(groupNameAndID))
+
+    # Set mode-specific methods and variables
+    if mode in MODIFY_MODES:
+        modeDict = MODIFY_MODES[mode]
+        verb, verbStem, verbPrep, methodName = itemgetter("verb", "verbStem", "verbPrep", "methodName")(modeDict)
+        modifyUsersMethod = getattr(group, methodName)
+        logger.debug(modifyUsersMethod)
+    else:
+        logger.error("Function was called with an invalid mode: " + mode)
+
+    if len(users) == 0:
+        logger.info(f"No users to {verb} {verbPrep} ArcGIS Group {groupNameAndID}")
+        instructorLog += f"No users were {verbStem}ed.\n\n"
+        logger.debug(f"modifyUsersInGroup: instructorLog: [\n{instructorLog}\n]")
         return instructorLog
 
-    logger.info('Adding Canvas Users to ArcGIS Group {}: {}'.format(groupNameAndID, courseUsers))
-    # ArcGIS usernames are U-M uniqnames with the ArcGIS organization name appended.
-    arcGISFormatUsers = formatUsersNamesForArcGIS(courseUsers)
-    logger.debug("addCanvasUsersToGroup: formatted: {}".format(arcGISFormatUsers))
-    
-    results = group.add_users(arcGISFormatUsers)
-    logger.debug("adding: results: {}".format(results))
+    logger.info(f"{verbStem}ing Canvas Users {verbPrep} ArcGIS Group {groupNameAndID}: {users}")
 
-    usersNotAdded = results.get('notAdded')
-    """:type usersNotAdded: list"""
-    usersCount = len(arcGISFormatUsers)
-    usersCount -= len(usersNotAdded) if usersNotAdded else 0
-    logger.debug("usersCount: {}".format(usersCount))
-    logger.debug("aCUTG: instructorLog 1: [{}]".format(instructorLog))
-    instructorLog += 'Number of users added to group: [{}]\n\n'.format(usersCount)
-    logger.debug("aCUTG: instructorLog 2: [{}]".format(instructorLog))
-    if usersNotAdded:
-        logger.warning('Warning: Some or all users not added to ArcGIS group {}: {}'.format(groupNameAndID, usersNotAdded))
-        instructorLog += 'Users not in group (these users need ArcGIS accounts created for them):\n' + '\n'.join(['* ' + userNotAdded for userNotAdded in usersNotAdded]) + '\n\n' + 'ArcGIS group ID number:\n{}\n\n'.format(group.id)
-    instructorLog += '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n'
-    logger.debug("aCUTG: instructorLog 3: [{}]".format(instructorLog))
+    # Change Canvas usernames to the ArcGIS format
+    # (ArcGIS usernames are U-M uniqnames with the ArcGIS organization name appended)
+    arcGISFormatUsers = formatUsersNamesForArcGIS(users)
+    logger.debug(f"modifyUsersInGroup: formatted: {arcGISFormatUsers}")
 
-    logger.info("addCanvasUsersToGroup: instructorLog: [{}]".format(instructorLog))
+    listsOfFormattedUsernames = util.splitListIntoSublists(arcGISFormatUsers, 20)
+    usersNotModified = []
+
+    for listOfFormattedUsernames in listsOfFormattedUsernames:
+        try:
+            results = modifyUsersMethod(listOfFormattedUsernames)
+            logger.debug(f"{verbStem}ing: results: {results}")
+            usersNotModified += results.get(f"not{verbStem.capitalize()}ed")
+        except RuntimeError as exception:
+            logger.error(f"Exception while {verbStem}ing users {verbPrep} ArcGIS group '{groupNameAndID}': {exception}")
+            return None
+
+    usersModifiedCount = len(arcGISFormatUsers) - len(usersNotModified)
+    logger.debug(f"usersModifiedCount: {usersModifiedCount}")
+    instructorLog += f"Number of users {verbStem}ed {verbPrep} group: [{usersModifiedCount}]\n\n"
+    if usersNotModified:
+        notModifiedMessage = f"Some or all users not {verbStem}ed {verbPrep} ArcGIS group"
+        if mode == "add":
+            notModifiedMessage += " (These users likely need ArcGIS accounts set up)"
+        logger.warning(
+            f"Warning: {notModifiedMessage} {groupNameAndID} : {usersNotModified}"
+        )
+        instructorLog += f"{notModifiedMessage}:\n" + "\n".join(
+            ["* " + userNotModified for userNotModified in usersNotModified]
+        ) + "\n"
+
+    logger.debug(f"modifyUsersInGroup: instructorLog: [\n{instructorLog}\n]")
     return instructorLog
 
 
@@ -135,43 +173,6 @@ def getCurrentArcGISMembers(group, groupNameAndID):
     groupUsers = groupAllMembers.get('users')
     """:type groupUsers: list"""
     return groupUsers
-
-
-def removeListOfUsersFromArcGISGroup(group, groupNameAndID, groupUsers):
-    """Remove only listed users from ArcGIS group."""
-
-    if len(groupUsers) == 0:
-        logger.info('No obsolete users to remove from ArcGIS Group {}'.format(groupNameAndID))
-        return None
-
-    logger.info('ArcGIS Users to be removed from ArcGIS Group [{}] [{}]'.format(groupNameAndID, ','.join(groupUsers)))
-    try:
-        results = group.removeUsersFromGroup(','.join(groupUsers))
-    except RuntimeError as exception:
-        logger.error('Exception while removing users from ArcGIS group "{}": {}'.format(groupNameAndID, exception))
-        return None
-            
-    usersNotRemoved = results.get('notRemoved')
-    """:type usersNotRemoved: list"""
-    if usersNotRemoved:
-        logger.warning('Warning: Some or all users not removed from ArcGIS group {}: {}'.format(groupNameAndID, usersNotRemoved))
-        
-    return results
-
-
-def removeSomeExistingGroupMembers(groupTitle, group,instructorLog,groupUsers):
-    """Get list of ArgGIS users to remove from group and call method to remove them."""
-    results = ''
-    groupNameAndID = util.formatNameAndID(group)
-    logger.info('Found ArcGIS group: {}'.format(groupNameAndID))
-    instructorLog += 'Updating ArcGIS group: "{}"\n'.format(groupTitle)
-    
-    if not groupUsers:
-        logger.info('Existing ArcGIS group {} does not have users to remove.'.format(groupNameAndID))
-    else:
-        results = removeListOfUsersFromArcGISGroup(group, groupNameAndID, groupUsers)
-        
-    return instructorLog, results
 
 
 def createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog):

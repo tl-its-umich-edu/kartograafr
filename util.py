@@ -52,6 +52,12 @@ def elideString(string):
     return string
 
 
+def splitListIntoSublists(origList: list, sublistLength: int=10):
+    """Transform a given list into a list of lists of a specified maximum length"""
+    sublists = [origList[x:x + sublistLength] for x in range(0, len(origList), sublistLength)]
+    return sublists
+
+
 class Iso8601UTCTimeFormatter(logging.Formatter):
     """
     A logging Formatter class giving timestamps in a more common ISO 8601 format.

@@ -132,19 +132,18 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
     canvasCourseUsers = [user.login_id for user in courseUserDictionary[course.id] if user.login_id is not None]
     logger.debug('All Canvas users in course for Group {}: Canvas Users: {}'.format(groupNameAndID, canvasCourseUsers))
     
-    # compute the exact sets of users to change.
-    changedArcGISGroupUsers, changedCourseUsers = minimizeUserChanges(groupUsersTrimmed, canvasCourseUsers)
-    # added to avoid undefined variable warning
-    
-    # fix up the user name format for ArcGIS users names
-    changedArcGISGroupUsers = arcgisUM.formatUsersNamesForArcGIS(changedArcGISGroupUsers)
-    logger.info('Users to remove from ArcGIS: Group {}: ArcGIS Users: {}'.format(groupNameAndID, changedArcGISGroupUsers))
-    logger.info('Users to add from Canvas course for ArcGIS: Group {}: Canvas Users: {}'.format(groupNameAndID, changedCourseUsers))
-    
+    # Compute the exact sets of users to change.
+    usersToRemove, usersToAdd = minimizeUserChanges(groupUsersTrimmed, canvasCourseUsers)
+
+    logger.info('Users to remove from ArcGIS: Group {}: Users: {}'.format(groupNameAndID, usersToRemove))
+    logger.info('Users to add to ArcGIS: Group {}: Users: {}'.format(groupNameAndID, usersToAdd))
+
     # Now update only the users in the group that have changed.
-    instructorLog, results = arcgisUM.removeSomeExistingGroupMembers(groupTitle, group, instructorLog, changedArcGISGroupUsers)  # @UnusedVariable
-    instructorLog = arcgisUM.addCanvasUsersToGroup(instructorLog, group, changedCourseUsers)
-    
+    instructorLog += f"Group: {groupNameAndID} \n\n"
+    instructorLog = arcgisUM.modifyUsersInGroup(group, usersToRemove, "remove", instructorLog)
+    instructorLog = arcgisUM.modifyUsersInGroup(group, usersToAdd, "add", instructorLog)
+    instructorLog += "- - -\n"
+
     return instructorLog
 
 
