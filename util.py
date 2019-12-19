@@ -52,7 +52,7 @@ def elideString(string):
     return string
 
 
-def splitListIntoSublists(origList, sublistLength=10):
+def splitListIntoSublists(origList: list, sublistLength: int=10):
     """Transform a given list into a list of lists of a specified maximum length"""
     sublists = [origList[x:x + sublistLength] for x in range(0, len(origList), sublistLength)]
     return sublists
