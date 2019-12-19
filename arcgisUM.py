@@ -114,7 +114,7 @@ def addCanvasUsersToGroup(group, courseUsers, instructorLog):
             logger.debug("adding: results: {}".format(results))
             usersNotAdded += results.get('notAdded')
         except RuntimeError as exception:
-            logger.error('Exception while removing users from ArcGIS group "{}": {}'.format(groupNameAndID, exception))
+            logger.error('Exception while adding users to ArcGIS group "{}": {}'.format(groupNameAndID, exception))
             return None
 
     usersCount -= len(usersNotAdded)
