@@ -39,7 +39,7 @@ The kartograafr application ...
 
 ### Use
 kartograafr is maintained by ITS Teaching & Learning at the University of Michigan. The unit runs the service to 
-support courses at the university that rely on ArcGIS for student assignments. Teaching & Learning currently runs the 
+support courses at the university that rely on ArcGIS for assignments. Teaching & Learning currently runs the 
 application as a scheduled job using [Docker](https://docs.docker.com/) containerization technology, the 
 [OpenShift Container Platform](https://docs.openshift.com/), and an instance of the 
 [Jenkins automation server](https://jenkins.io/doc/).
@@ -71,7 +71,7 @@ staff. To designate a course and assignments in Canvas you would like synchroniz
        "OK" button.
     1. After the import is complete, you will see "ArcGIS Group" in your course's list of outcomes.
 1. Each of your course's assignments which are to be synchronized with ArcGIS Online needs to include the "ArcGIS Group"
-   outcome in their rubrics. **_You will need to do this for each new assignment you add to the course._** This can be
+   outcome in its rubric. **_You will need to do this for each new assignment you add to the course._** This can be
    simplified somewhat by adding the "ArcGIS Group" outcome to a single rubric that will be used by multiple 
    assignments. Each assignment that uses that rubric will automatically include the "ArcGIS Group" outcome. It's 
    recommended that rubrics should be given meaningful names. For example, a good name could be "_your course name 
@@ -96,7 +96,7 @@ Online. It will happen automatically, several times each day.
 ### For Administrators and Developers
 
 To set up the application, users will need to perform configuration steps in the Canvas and ArcGIS instances that they
-want to connect, and specify environment variables to connect to those instances and determine other application
+want to connect, and specify environment variables to access those instances and determine other application
 settings. The following sections provide instructions for how to complete this configuration. (Note: UM-affiliated 
 users should contact Teaching & Learning, as much of this configuration is already in place.)
 
@@ -104,9 +104,9 @@ users should contact Teaching & Learning, as much of this configuration is alrea
 
 Within your instance of Canvas, do the following:
 
-1. Create an API access token.
+1. Create and record an API access token.
 1. Record the base URL of the Canvas API.
-1. Create an outcome for ArcGIS and record its ID number.
+1. Create an outcome for ArcGIS, and record its ID number.
 1. Create a kartograafr configuration course and record its ID number.
     1. Within the new configuration course, create a page named `course-ids`.
     1. Add to the page the URLs of courses to be processed (they will appear as links on the page).
@@ -116,7 +116,7 @@ Within your instance of Canvas, do the following:
 
 Within your instance of ArcGIS, do the following:
 
-1. Record the organization name in use (e.g., at UM, `devumich` or `umich`)
+1. Record the organization name in use (e.g., at UM, `devumich` or `umich`).
 1. Create a user with permission to create and modify user groups, and record the username and password.
 
 ### Application
@@ -128,22 +128,22 @@ classes defined in `config.py` (see the Installation section below for how to em
 
 The `env.json` file contains sensitive information, including account login information and an API secret, and thus 
 needs to be kept out of source control. Teaching & Learning maintains production, test, and local development versions 
-of these files outside of GitHub. A template JSON file called `env_blank.json` has been provided as a starting point.
+of this file outside of GitHub. A template JSON file called `env_blank.json` has been provided as a starting point.
 
 To create your version of this file, do the following:
 
 1. Copy `env_blank.json`.
 1. Rename the file `env.json` (for use in local development) or `[some name].json` (for use in OpenShift).
-1. Replace the empty strings and 0's with the desired settings and values.
+1. Replace the empty strings and `0`'s with the desired settings and values.
 
 The meaning of each key and its expected value are described in the table below.
 
 **Key** | **Description**
 ----- | -----
-`Logging_Level` | The minimum level for log messages that will appear in output. We recommend either `INFO` or `DEBUG` for most use cases; see [Python's logging module](https://docs.python.org/3/library/logging.html) for more info.
-`Logging_Directory` | The path where log files will be written; in OpenShift, this needs to be the `tmp` directory of the container's file system.
+`Logging_Level` | The minimum level for log messages that will appear in output. `INFO` or `DEBUG` is recommended for most use cases; see [Python's logging module](https://docs.python.org/3/library/logging.html) for more info.
+`Logging_Directory` | The path where log files will be written (see **OpenShift** under Installation & Development for a description of an OpenShift-related restriction on this value).
 `SMTP_Server` | The name of the server emails should be sent from, if the `--email` flag is in use.
-`Email_Sender_Address` | The name and email address to use in the FROM header of emails sent. This should take the form of "\"Severus Snape"\ <halfbloodprince@umich.edu>" (make sure to escape double quotes).
+`Email_Sender_Address` | The name and email address to use in the FROM header of emails sent. This should take the form of "\\"Severus Snape\\" <halfbloodprince@umich.edu>" (make sure to escape double quotes).
 `Canvas_Base_URL` | The URL of the Canvas instance you want to pull Canvas data from; for production at UM, this is `umich.instructure.com`.
 `Canvas_API_Token` | The API token to use when making requests for data related to courses, assignments, and users.
 `Canvas_Config_Course_ID` | The ID number of the configuration course, (see the **Canvas** configuration section above).
@@ -156,19 +156,19 @@ The meaning of each key and its expected value are described in the table below.
 ## <a name='installationAndDevelopment'></a>Installation & Development
 
 The sections below provide instructions for installing and running the application in various environments. Before
-attempting to install or deploy, ensure the configuration steps under **For Administrators and Developers** have been
-completed. Depending on the environment you plan to run the application in, you may also need to install some or all
-of the following:
+attempting to install or deploy, ensure the configuration steps under **For Administrators & Developers** in Configuration
+have been completed. Depending on the environment you plan to run the application in, you may also need to install some 
+or all of the following:
    * Python
    * Git
-   * Docker Desktop
-   * OpenShift CLI
+   * [Docker Desktop](https://www.docker.com/products/docker-desktop)
+   * [OpenShift CLI](https://docs.openshift.com/enterprise/3.1/cli_reference/get_started_cli.html)
 
 ### Local Development
 
 To set up the application for use locally or in preparation for development work, do the following:
 
-1. Clone the repository, and navigate into the repository.
+1. Clone the repository, and navigate into it.
    ```
    https://github.com/tl-its-umich-edu/kartograafr.git  # HTTPS
    git@github.com:tl-its-umich-edu/kartograafr.git  # SSH
@@ -213,7 +213,7 @@ kartograafr with this mock server, do the following:
    ```
 The email will appear in the window where you ran the Shell script.
 
-Alternatively, you can print the email content as part of application's output (without using the mock server) by 
+Alternatively, you can print the email content as part of the application's output (without using the mock server) by 
 passing the `--printEmail` flag when executing `main.py`.
 ```
 python main.py --email --printEmail
@@ -237,21 +237,25 @@ Note: Currently, there is no way to test sending emails using Docker on a local 
 
 ### OpenShift
 
-Running the application as a job using OpenShift and Jenkins involves several steps, which are beyond the scope of this 
+Deploying the application as a job using OpenShift and Jenkins involves several steps, which are beyond the scope of this 
 README. However, it seems appropriate to explain some configuration steps assumed by the `Dockerfile` and unique to this
 application.
 
-* The `env.json` file described during the Configuration steps needs to be made available to running kartograafr 
+* The `env.json` file described in Configuration needs to be made available to running kartograafr 
   containers via an OpenShift ConfigMap, a type of Resource. A volume containing the ConfigMap should be mapped to the 
   `configuration/secrets` subdirectory. These details will be specified a configuration file (.yaml) defining the 
   pod.
+
+* The kartograafr application writes log files as part of its normal operations. Because of permission restrictions 
+  within OpenShift pods, users may need to specify a path for `Logging_Directory` in `env.json` that begins with
+  `tmp`. The U-M configuration uses `tmp/log/kartograafr`.
 
 * By default, the application will run without sending email and with the assumption that the JSON file will be named 
   `env.json`. However, the `start.sh` invoked by the `Dockerfile` and `config.py` will also check whether the 
   environment variables `ENV_FILE` and `SEND_EMAIL` have been defined. These can be set using the pod configuration 
   file. To use a different name for the JSON file, set `ENV_FILE` to a path beginning with `configuration/secrets/`
-  and ending with the file name. To have the application send email, set `SEND_EMAIL` to the string `"True"`. The `env`
-  block in the `.yaml` will look something like the following:
+  and ending with the file name. To have the application send email, set `SEND_EMAIL` to the string `"True"`. With these
+  set, the `env` block in the `.yaml` will look something like the following:
 
   ```
   - env:
