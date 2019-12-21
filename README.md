@@ -93,7 +93,7 @@ staff. To designate a course and assignments in Canvas you would like synchroniz
 Once all of the above requirements are satisfied, kartograafr will synchronize your course's assignments with ArcGIS
 Online. It will happen automatically, several times each day.
 
-### For Administrators and Developers
+### For Administrators & Developers
 
 To set up the application, users will need to perform configuration steps in the Canvas and ArcGIS instances that they
 want to connect, and specify environment variables to access those instances and determine other application
@@ -136,7 +136,7 @@ To create your version of this file, do the following:
 1. Rename the file `env.json` (for use in local development) or `[some name].json` (for use in OpenShift).
 1. Replace the empty strings and `0`'s with the desired settings and values.
 
-The meaning of each key and its expected value are described in the table below.
+The meanings of the keys and their expected values are described in the table below.
 
 **Key** | **Description**
 ----- | -----
