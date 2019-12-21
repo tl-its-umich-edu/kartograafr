@@ -248,7 +248,8 @@ application.
 
 * The kartograafr application writes log files as part of its normal operations. Because of permission restrictions 
   within OpenShift pods, users may need to specify a path for `Logging_Directory` in `env.json` that begins with
-  `tmp`. The U-M configuration uses `tmp/log/kartograafr`.
+  `tmp`. The U-M configuration uses `tmp/log/kartograafr`. Note that these log files will disappear with the running
+  container.
 
 * By default, the application will run without sending email and with the assumption that the JSON file will be named 
   `env.json`. However, the `start.sh` invoked by the `Dockerfile` and `config.py` will also check whether the 
