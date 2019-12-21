@@ -70,9 +70,9 @@ staff. To designate a course and assignments in Canvas you would like synchroniz
     1. In the alert box with the message "Import outcome 'ArcGIS Group' to group '_your course name here_'?", click the
        "OK" button.
     1. After the import is complete, you will see "ArcGIS Group" in your course's list of outcomes.
-1. Each of your course's assignments which are to be synchronized with ArcGIS Online needs to include the "ArcGIS Group"
-   outcome in its rubric. **_You will need to do this for each new assignment you add to the course._** This can be
-   simplified somewhat by adding the "ArcGIS Group" outcome to a single rubric that will be used by multiple 
+1. Each of your course's assignments which are to be synchronized with ArcGIS Online needs to include the "ArcGIS 
+   Group" outcome in its rubric. **_You will need to do this for each new assignment you add to the course._** This can 
+   be simplified somewhat by adding the "ArcGIS Group" outcome to a single rubric that will be used by multiple 
    assignments. Each assignment that uses that rubric will automatically include the "ArcGIS Group" outcome. It's 
    recommended that rubrics should be given meaningful names. For example, a good name could be "_your course name 
    here_ Rubric (with ArcGIS sync)".
@@ -80,8 +80,8 @@ staff. To designate a course and assignments in Canvas you would like synchroniz
     1. Edit the assignment's rubric (or add a new rubric if one doesn't already exist).
     1. Click on "🔍 Find Outcome".
     1. In the dialog box of your course's outcomes that appears, click "ArcGIS Group" in the list on the left side of 
-       the box. (Note: **_DO NOT_** click on the larger "ArcGIS Group" link that appears in the wider space to the right
-       of the list.)
+       the box. (Note: **_DO NOT_** click on the larger "ArcGIS Group" link that appears in the wider space to the 
+       right of the list.)
     1. At the bottom right corner of the dialog box, click the "Import" button.
     1. In the alert box with the message "Import outcome 'ArcGIS Group' to group '_your course name here_'?", click the
        "OK" button.
@@ -124,7 +124,8 @@ Within your instance of ArcGIS, do the following:
 For the application to run, environment variables need to be made available through a JSON file named **env.json** 
 (or similar). This file provides key-value pairs that help the application access necessary accounts, find Canvas 
 entities, and send emails. The application imports this file and uses its values to round out a few configuration 
-classes defined in `config.py` (see the Installation section below for how to embed this file in the application). 
+classes defined in `config.py` (see the **Installation & Development** section below for how to embed this file in the 
+application). 
 
 The `env.json` file contains sensitive information, including account login information and an API secret, and thus 
 needs to be kept out of source control. Teaching & Learning maintains production, test, and local development versions 
@@ -140,13 +141,13 @@ The meanings of the keys and their expected values are described in the table be
 
 **Key** | **Description**
 ----- | -----
-`Logging_Level` | The minimum level for log messages that will appear in output. `INFO` or `DEBUG` is recommended for most use cases; see [Python's logging module](https://docs.python.org/3/library/logging.html) for more info.
+`Logging_Level` | The minimum level for log messages that will appear in output. `INFO` or `DEBUG` is recommended for most use cases; see [Python's logging module](https://docs.python.org/3/library/logging.html).
 `Logging_Directory` | The path where log files will be written (see **OpenShift** under Installation & Development for a description of an OpenShift-related restriction on this value).
 `SMTP_Server` | The name of the server emails should be sent from, if the `--email` flag is in use.
 `Email_Sender_Address` | The name and email address to use in the FROM header of emails sent. This should take the form of "\\"Severus Snape\\" <halfbloodprince@umich.edu>" (make sure to escape double quotes).
 `Canvas_Base_URL` | The URL of the Canvas instance you want to pull Canvas data from; for production at UM, this is `umich.instructure.com`.
 `Canvas_API_Token` | The API token to use when making requests for data related to courses, assignments, and users.
-`Canvas_Config_Course_ID` | The ID number of the configuration course, (see the **Canvas** configuration section above).
+`Canvas_Config_Course_ID` | The ID number of the configuration course, (see the **Canvas** Configuration section above).
 `ArcGIS_Org_Name` | The name of the ArcGIS organization in use.
 `ArcGIS_Username` | The name of an arcGIS user with permission for creating and modifying user groups.
 `ArcGIS_Passowrd` | The name of the password for the username provided above.
@@ -156,9 +157,9 @@ The meanings of the keys and their expected values are described in the table be
 ## <a name='installationAndDevelopment'></a>Installation & Development
 
 The sections below provide instructions for installing and running the application in various environments. Before
-attempting to install or deploy, ensure the configuration steps under **For Administrators & Developers** in Configuration
-have been completed. Depending on the environment you plan to run the application in, you may also need to install some 
-or all of the following:
+attempting to install or deploy, ensure the steps in the **For Administrators & Developers** section in 
+Configuration have been completed. Depending on the environment you plan to run the application in, you may also need 
+to install some or all of the following:
    * Python
    * Git
    * [Docker Desktop](https://www.docker.com/products/docker-desktop)
@@ -197,7 +198,7 @@ To set up the application for use locally or in preparation for development work
 
 #### Sending Email
 
-To send emails with kartograafr, the `main.py` files needs to be executed using the `--email` flag, but configuring
+To send emails with kartograafr, the `main.py` file needs to be executed using the `--email` flag, but configuring
 the application to send email from a local environment requires additional steps. To assist in testing email
 functionality, a Shell script called `runDebugEmail.sh` has been provided that creates a mock email server. To run
 kartograafr with this mock server, do the following:
@@ -237,14 +238,14 @@ Note: Currently, there is no way to test sending emails using Docker on a local 
 
 ### OpenShift
 
-Deploying the application as a job using OpenShift and Jenkins involves several steps, which are beyond the scope of this 
-README. However, it seems appropriate to explain some configuration steps assumed by the `Dockerfile` and unique to this
-application.
+Deploying the application as a job using OpenShift and Jenkins involves several steps, which are beyond the scope of
+this README. However, it seems appropriate to explain some configuration steps assumed by the `Dockerfile` and unique 
+to this application.
 
-* The `env.json` file described in Configuration needs to be made available to running kartograafr 
-  containers via an OpenShift ConfigMap, a type of Resource. A volume containing the ConfigMap should be mapped to the 
-  `configuration/secrets` subdirectory. These details will be specified a configuration file (.yaml) defining the 
-  pod.
+* The `env.json` file described in the **Application** section under Configuration needs to be made available to 
+  running kartograafr containers via an OpenShift ConfigMap, a type of Resource. A volume containing the ConfigMap 
+  should be mapped to the `configuration/secrets` subdirectory. These details will be specified in a configuration file
+   (.yaml) defining the pod.
 
 * The kartograafr application writes log files as part of its normal operations. Because of permission restrictions 
   within OpenShift pods, users may need to specify a path for `Logging_Directory` in `env.json` that begins with
@@ -253,10 +254,10 @@ application.
 
 * By default, the application will run without sending email and with the assumption that the JSON file will be named 
   `env.json`. However, the `start.sh` invoked by the `Dockerfile` and `config.py` will also check whether the 
-  environment variables `ENV_FILE` and `SEND_EMAIL` have been defined. These can be set using the pod configuration 
-  file. To use a different name for the JSON file, set `ENV_FILE` to a path beginning with `configuration/secrets/`
-  and ending with the file name. To have the application send email, set `SEND_EMAIL` to the string `"True"`. With these
-  set, the `env` block in the `.yaml` will look something like the following:
+  environment variables `ENV_FILE` and `SEND_EMAIL` have been defined. These can be set using the OpenShift pod 
+  configuration file. To use a different name for the JSON file, set `ENV_FILE` to a path beginning with 
+  `configuration/secrets/` and ending with the file name. To have the application send email, set `SEND_EMAIL` to the 
+  string `"True"`. With these set, the `env` block in the `.yaml` will look something like the following:
 
   ```
   - env:
