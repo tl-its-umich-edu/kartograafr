@@ -13,11 +13,14 @@ ArcGIS/Canvas data bridge
         * Canvas
         * ArcGIS
         * Application
-1. [Installation & Development](#installationAndDevelopment)
+1. [Development & Deployment](#DevelopmentAndDeployment)
     * Local Development
-        * Sending Email
-    * Docker
-    * OpenShift
+        * With Docker
+        * With a Virtual Environment
+    * OpenShift Deployment
+    * Sending Email
+        * Local Development
+        * In OpenShift
 
 ## <a name='overview'></a>Overview
 
@@ -119,7 +122,7 @@ Within your instance of ArcGIS, do the following:
 1. Record the organization name in use (e.g., at UM, `devumich` or `umich`).
 1. Create a user with permission to create and modify user groups, and record the username and password.
 
-### Application
+#### Application
 
 For the application to run, environment variables need to be made available through a JSON file named **env.json** 
 (or similar). This file provides key-value pairs that help the application access necessary accounts, find Canvas 
@@ -154,34 +157,54 @@ The meanings of the keys and their expected values are described in the table be
 
 ----------------
 
-## <a name='installationAndDevelopment'></a>Installation & Development
+## <a name='DevelopmentAndDeployment'></a>Development & Deployment
 
 The sections below provide instructions for installing and running the application in various environments. Before
 attempting to install or deploy, ensure the steps in the **For Administrators & Developers** section in 
 Configuration have been completed. Depending on the environment you plan to run the application in, you may also need 
 to install some or all of the following:
-   * Python
-   * Git
+   * Python 3.7
    * [Docker Desktop](https://www.docker.com/products/docker-desktop)
    * [OpenShift CLI](https://docs.openshift.com/enterprise/3.1/cli_reference/get_started_cli.html)
 
 ### Local Development
 
-To set up the application for use locally or in preparation for development work, do the following:
+To set up the application for use locally or in preparation for development work, you can use Docker or `virtualenv`.
+For either option, first you'll need to do the following:
+ 
+1. Clone the repository and navigate into it.
+    ```
+    https://github.com/tl-its-umich-edu/kartograafr.git  # HTTPS
+    git@github.com:tl-its-umich-edu/kartograafr.git  # SSH
+    
+    cd kartograafr
+    ```
+2. Place the `env.json` file previously created in the `configuration/secrets/` directory.
 
-1. Clone the repository, and navigate into it.
+#### With Docker
+
+You can run the application without installing the dependencies manually by leveraging the `Dockerfile` and Docker 
+Desktop. To run with Docker, do the following:
+
+1. Build an image.
    ```
-   https://github.com/tl-its-umich-edu/kartograafr.git  # HTTPS
-   git@github.com:tl-its-umich-edu/kartograafr.git  # SSH
-   
-   cd kartograafr
+   docker build -t kartograafr .
    ```
+1. Run a container using the tagged image.
+   ```
+   docker run kartograafr
+   ```
+
+#### With a Virtual Environment
+
+You can also set up the application using `virtualenv` by doing the following:
+
 1. Create a virtual environment using `virtualenv`.
    ```
    virtualenv venv
    source venv/bin/activate  # for Mac OS
    ```
-1. Install the dependencies in `requirements.txt`.
+1. Install the dependencies specified in `requirements.txt`.
    ```
    pip install -r requirements.txt
    ```
@@ -189,26 +212,57 @@ To set up the application for use locally or in preparation for development work
    ```
    pip install arcgis --no-deps
    ```
-1. Place the `env.json` file previously created in the `configuration/secrets/` directory.
-
 1. Run the application.
    ```
    python main.py
    ```
 
-#### Sending Email
+### OpenShift Deployment
 
-To send emails with kartograafr, the `main.py` file needs to be executed using the `--email` flag, but configuring
-the application to send email from a local environment requires additional steps. To assist in testing email
-functionality, a Shell script called `runDebugEmail.sh` has been provided that creates a mock email server. To run
-kartograafr with this mock server, do the following:
+Deploying the application as a job using OpenShift and Jenkins involves several steps, which are beyond the scope of
+this README. However, it seems appropriate to explain some configuration assumed by the `Dockerfile` and unique to this
+application.
+
+* The `env.json` file described in the **Application** section under Configuration needs to be made available to 
+  running kartograafr containers via an OpenShift ConfigMap, a type of Resource. A volume containing the ConfigMap 
+  should be mapped to the `configuration/secrets` subdirectory. These details will be specified in a configuration file
+  (.yaml) defining the pod.
+
+* The kartograafr application writes log files as part of its normal operations. Because of permission restrictions 
+  within OpenShift pods, users may need to specify a path for `Logging_Directory` in `env.json` that begins with
+  `tmp`. The UM configuration uses `tmp/log/kartograafr`. Note that these log files will disappear with the running
+  container.
+
+* By default, the application will run with the assumption that the JSON configuration file will be named `env.json`. 
+  However, `config.py` will also check for the environment variable `ENV_FILE`. This variable can be set using the 
+  OpenShift pod configuration file. To use a different name for the JSON file, set `ENV_FILE` to a path beginning with 
+  `configuration/secrets/` and ending with the file name. With this set, the `env` block in the `.yaml` will look 
+  something like this:
+  ```
+  - env:
+     - name: ENV_FILE
+       value: /configuration/secrets/env_test.json
+  ```
+
+### Sending Email
+
+The application includes optional functionality for sending emails to the instructors of the courses for which it 
+maintains ArcGIS groups. To send emails with kartograafr, the `main.py` file needs to be executed using the `--email` 
+flag. The following sections explain how to test this during development and to configure the application to send 
+emails from an OpenShift pod.
+
+#### Local Development
+
+To assist in testing email functionality, a Shell script called `runDebugEmail.sh` has been provided that creates a 
+mock email server. For the time being, there is no established way of using this script while also running locally
+with Docker. However, you can test the email capability when using a virtual environment by doing the following:
 
 1. Ensure the `SMTP_Server` value in `env.json` is set to `localhost:1025`.
 1. Execute the Shell script to start the server.
    ```
    /bin/bash runDebugEmail.sh
    ```
-1. In a separate shell, terminal, or console window, run `main.py`.
+1. In a separate terminal window, run `main.py`.
    ```
    python main.py --email
    ```
@@ -220,49 +274,17 @@ passing the `--printEmail` flag when executing `main.py`.
 python main.py --email --printEmail
 ```
 
-### Docker
+#### In OpenShift
 
-When developing locally, you can also run the application by leveraging the `Dockerfile` and Docker Desktop. To run
-with Docker, do the following:
+When deploying with OpenShift, the application can be configured to send email by defining the `SEND_EMAIL` 
+environment variable in the pod configuration file -- just as in the process described in the **OpenShift Deployment** 
+section above for setting `ENV_FILE`. To have the application send email, ensure the correct `SMTP_Server` value for
+the OpenShift environment is set in `env.json`, and then set `SEND_EMAIL` to the string `"True"` in the pod's `.yaml`.
+(If the value for `SEND_EMAIL` is not set or set to any other string, the application will not send email.) With this 
+variable set, the `env` block of the pod configuration file will look something like this:
 
-1. Build an image.
-   ```
-   docker build -t kartograafr .
-   ```
-2. Run a container using the tagged image.
-   ```
-   docker run kartograafr
-   ```
-
-Note: Currently, there is no way to test sending emails using Docker on a local machine.
-
-### OpenShift
-
-Deploying the application as a job using OpenShift and Jenkins involves several steps, which are beyond the scope of
-this README. However, it seems appropriate to explain some configuration steps assumed by the `Dockerfile` and unique 
-to this application.
-
-* The `env.json` file described in the **Application** section under Configuration needs to be made available to 
-  running kartograafr containers via an OpenShift ConfigMap, a type of Resource. A volume containing the ConfigMap 
-  should be mapped to the `configuration/secrets` subdirectory. These details will be specified in a configuration file
-   (.yaml) defining the pod.
-
-* The kartograafr application writes log files as part of its normal operations. Because of permission restrictions 
-  within OpenShift pods, users may need to specify a path for `Logging_Directory` in `env.json` that begins with
-  `tmp`. The U-M configuration uses `tmp/log/kartograafr`. Note that these log files will disappear with the running
-  container.
-
-* By default, the application will run without sending email and with the assumption that the JSON file will be named 
-  `env.json`. However, the `start.sh` invoked by the `Dockerfile` and `config.py` will also check whether the 
-  environment variables `ENV_FILE` and `SEND_EMAIL` have been defined. These can be set using the OpenShift pod 
-  configuration file. To use a different name for the JSON file, set `ENV_FILE` to a path beginning with 
-  `configuration/secrets/` and ending with the file name. To have the application send email, set `SEND_EMAIL` to the 
-  string `"True"`. With these set, the `env` block in the `.yaml` will look something like the following:
-
-  ```
-  - env:
-     - name: ENV_FILE
-       value: /configuration/secrets/env_test.json
-     - name: SEND_EMAIL
-       value: "True"
-  ```
+```
+-env
+ - name: SEND_EMAIL
+   value: "True"
+```
