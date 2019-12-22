@@ -240,8 +240,8 @@ application.
   something like this:
   ```
   - env:
-     - name: ENV_FILE
-       value: /configuration/secrets/env_test.json
+      - name: ENV_FILE
+        value: /configuration/secrets/env_test.json
   ```
 
 ### Sending Email
@@ -284,7 +284,7 @@ the OpenShift environment is set in `env.json`, and then set `SEND_EMAIL` to the
 variable set, the `env` block of the pod configuration file will look something like this:
 
 ```
--env
- - name: SEND_EMAIL
-   value: "True"
+- env:
+    - name: SEND_EMAIL
+      value: "True"
 ```
