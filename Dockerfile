@@ -1,12 +1,12 @@
 # Use a Python base image
-FROM python:3.7
+FROM python:3.8-slim
 
 COPY requirements.txt /requirements.txt
 RUN pip install -r requirements.txt
 
 # arcgis needs to be installed separately because of issues when including the requirement with a flag in
 # requirements.txt
-RUN pip install arcgis --no-deps
+RUN pip install arcgis==1.9.0 --no-deps
 
 WORKDIR /kartograafr/
 COPY . /kartograafr/
