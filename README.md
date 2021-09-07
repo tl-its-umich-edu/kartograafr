@@ -153,7 +153,7 @@ The meanings of the keys and their expected values are described in the table be
 `Canvas_Config_Course_ID` | The ID number of the configuration course, (see the **Canvas** Configuration section above).
 `ArcGIS_Org_Name` | The name of the ArcGIS organization in use.
 `ArcGIS_Username` | The name of an arcGIS user with permission for creating and modifying user groups.
-`ArcGIS_Passowrd` | The name of the password for the username provided above.
+`ArcGIS_Password` | The name of the password for the username provided above.
 
 ----------------
 
@@ -179,25 +179,29 @@ For either option, first you'll need to do the following:
     
     cd kartograafr
     ```
-2. Place the `env.json` file previously created in the `configuration/secrets/` directory.
 
 #### With Docker
 
-You can run the application without installing the dependencies manually by leveraging the `Dockerfile` and Docker 
-Desktop. To run with Docker, do the following:
+You can run the application without installing the dependencies manually by leveraging the `Dockerfile`,
+`docker-compose.yml`, and Docker Desktop. To run with Docker, do the following:
+
+1. Place the `env.json` file previously created in the `{HOME}/secrets/kartograafr` directory,
+   where `{HOME}` is your user's home directory, or `~`.
 
 1. Build an image.
    ```
-   docker build -t kartograafr .
+   docker compose build
    ```
 1. Run a container using the tagged image.
    ```
-   docker run kartograafr
+   docker compose up
    ```
 
 #### With a Virtual Environment
 
 You can also set up the application using `virtualenv` by doing the following:
+
+1. Place the `env.json` file previously created in the `configuration/secrets` directory in the repository.
 
 1. Create a virtual environment using `virtualenv`.
    ```
