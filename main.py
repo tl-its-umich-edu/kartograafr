@@ -146,11 +146,16 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
 
     return instructorLog
 
+def prepStringForArcGISAPI(param_string):
+    # Because ':' is used in ARCGIS REST API calls as separator between param name and param value
+    # (https://developers.arcgis.com/rest/users-groups-and-items/search-reference.htm)
+    # we will replace ':' and '/' characters with '-', to avoid misinterpretation in ARCGIS API calls
+    return re.sub(r"[:/]", "-", param_string)
 
 def updateArcGISGroupForAssignment(arcGIS, courseUserDictionary, groupTags, assignment, course,instructorLog):
     """" Make sure there is a corresponding ArcGIS group for this Canvas course and assignment.  Sync up the ArcGIS members with the Canvas course members."""
-     
-    groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
+    
+    groupTitle = '%s_%s_%s_%s' % (prepStringForArcGISAPI(course.name), course.id, prepStringForArcGISAPI(assignment.name), assignment.id)
     
     group = arcgisUM.lookForExistingArcGISGroup(arcGIS, groupTitle)
      
