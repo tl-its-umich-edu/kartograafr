@@ -84,7 +84,7 @@ def getArcGISGroupByTitle(arcGISAdmin, title):
     :return: ArcGIS Group object or None
     :rtype: Group or None
     """
-    searchString = "title:"+title
+    searchString = f'title:"{title}"'
     logger.debug("group search string: original: {}".format(searchString))
 
     # quote characters that are special in the group search.
