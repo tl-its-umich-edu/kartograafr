@@ -148,7 +148,7 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
 
 def updateArcGISGroupForAssignment(arcGIS, courseUserDictionary, groupTags, assignment, course,instructorLog):
     """" Make sure there is a corresponding ArcGIS group for this Canvas course and assignment.  Sync up the ArcGIS members with the Canvas course members."""
-    
+     
     groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
     
     group = arcgisUM.lookForExistingArcGISGroup(arcGIS, groupTitle)
