@@ -4,7 +4,7 @@
 beautifulsoup4==4.9.3
 ntlm-auth==1.5.0
 python-dateutil==2.8.2
-requests==2.26.0
+requests==2.31.0
 requests-toolbelt==0.9.1
 requests_ntlm==1.1.0
 six==1.16.0
