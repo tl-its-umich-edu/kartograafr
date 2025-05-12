@@ -1,5 +1,7 @@
 import json, os
 
+ENV = {}
+
 try:
     with open(os.getenv("ENV_FILE", "configuration/secrets/env.json")) as env_file:
         ENV = json.load(env_file)
