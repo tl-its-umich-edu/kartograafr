@@ -11,5 +11,3 @@ else
   echo "Running kartograafr WITHOUT email flag"
   python main.py
 fi
-
-# The End
