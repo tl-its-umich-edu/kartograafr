@@ -1,11 +1,13 @@
-# Use a Python base image
-FROM python:3.8-slim
+FROM python:3.13-slim
 
 COPY requirements.txt /requirements.txt
-RUN pip install -r requirements.txt
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    pip install -r requirements.txt
 
-# arcgis needs to be installed separately because of issues when including the requirement with a flag in
-# requirements.txt
+# ArcGIS must be installed separately because some of its dependencies cause
+# conflicts, but we don't need those dependencies.  We cannot use the
+# `--no-deps` flag in `requirements.txt`, so we install ArcGIS separately.
 RUN pip install arcgis==1.9.0 --no-deps
 
 WORKDIR /kartograafr/
