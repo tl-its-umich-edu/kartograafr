@@ -1,5 +1,5 @@
-# Note: this does not include arcgis, which needs to be installed manually when using virtualenv.
-# Use the following command: pip install arcgis --no-deps
+# Note: this does not include ArcGIS, which must be installed separately when
+# using containers.  See `Dockerfile` for more information.
 
 beautifulsoup4==4.9.3
 ntlm-auth==1.5.0
@@ -8,5 +8,6 @@ requests==2.26.0
 requests-toolbelt==0.9.1
 requests_ntlm==1.1.0
 six==1.16.0
-ujson==4.1.0
+standard-imghdr==3.13.0
+ujson==5.10.0
 url-normalize==1.4.3
