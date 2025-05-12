@@ -95,11 +95,11 @@ def getCourseAssignmentsWithOutcome(canvas, courseIDs, outcome):
 # Uses sets to do this so duplicate entries will become singular and order in the list will be arbitrary.
 def computeListDifferences(leftList, rightList):
     """Take 2 lists and return 3 lists of entries: only in first, only in seconds, only in both lists.  Element order is not preserved. Duplicates will be compressed."""
-    
+
     leftOnly = list(set(leftList) - set(rightList))
     rightOnly = list(set(rightList) - set(leftList))
     both = list(set(rightList) & set(leftList))
-               
+
     return leftOnly, rightOnly, both
 
 # Look at lists of users already in group and those currently in the course and return new lists
@@ -110,28 +110,28 @@ def minimizeUserChanges(groupUsers, courseUsers):
     """Compute minimal changes to ArgGIS group membership so that members who don't need to be changed aren't changed."""
     logger.debug('groupUsers input: {}'.format(groupUsers))
     logger.debug('courseUsers input: {}'.format(courseUsers))
-    
+
     # Based on current Canvas and ArcGIS memberships find obsolete users in ArcGIS group, new users in course,
     # and members in both (hence unchanged).
     minGroupUsers, minCourseUsers, unchangedUsers = computeListDifferences(groupUsers,courseUsers)
-    
+
     logger.info('changedArcGISGroupUsers: {} changedCanvasUsers: {} unchanged Users {}'.format(minGroupUsers,minCourseUsers,unchangedUsers))
-  
+
     return minGroupUsers, minCourseUsers
 
 
 def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, group):
     """Add remove / users from group to match Canvas course"""
-    
+
     # get the arcgis group members and the canvas course members.
     groupNameAndID = util.formatNameAndID(group)
     groupUsers = arcgisUM.getCurrentArcGISMembers(group, groupNameAndID)
     logger.debug('group users: {}'.format(groupUsers))
-    groupUsersTrimmed = [re.sub('_\S+$', '', gu) for gu in groupUsers]
+    groupUsersTrimmed = [re.sub(r'_\S+$', '', gu) for gu in groupUsers]
     logger.debug('All ArcGIS users currently in Group {}: ArcGIS Users: {}'.format(groupNameAndID, groupUsers))
     canvasCourseUsers = [user.login_id for user in courseUserDictionary[course.id] if user.login_id is not None]
     logger.debug('All Canvas users in course for Group {}: Canvas Users: {}'.format(groupNameAndID, canvasCourseUsers))
-    
+
     # Compute the exact sets of users to change.
     usersToRemove, usersToAdd = minimizeUserChanges(groupUsersTrimmed, canvasCourseUsers)
 
@@ -149,22 +149,22 @@ def updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, gr
 
 def updateArcGISGroupForAssignment(arcGIS, courseUserDictionary, groupTags, assignment, course,instructorLog):
     """" Make sure there is a corresponding ArcGIS group for this Canvas course and assignment.  Sync up the ArcGIS members with the Canvas course members."""
-     
+
     groupTitle = '%s_%s_%s_%s' % (course.name, course.id, assignment.name, assignment.id)
-    
+
     group = arcgisUM.lookForExistingArcGISGroup(arcGIS, groupTitle)
-     
+
     if group is None:
         group, instructorLog = arcgisUM.createNewArcGISGroup(arcGIS, groupTags, groupTitle,instructorLog)
-    
+
     # if creation didn't work then log that.
     if group is None:
         logger.info('Problem creating or updating ArcGIS group "{}": Missing group object.'.format(groupTitle))
         instructorLog += 'Problem creating or updating ArcGIS group "{}"\n'.format(groupTitle)
-    else: 
+    else:
         # have a group.  Might be new or existing.
         instructorLog = updateGroupUsers(courseUserDictionary, course, instructorLog, groupTitle, group)
-        
+
     courseLogger = getCourseLogger(course.id, course.name)
     logger.debug("update group instructor log: {}".format(instructorLog))
     courseLogger.info(instructorLog)
@@ -234,7 +234,7 @@ def logToStdOut():
     """Have log output go to stdout in addition to any file."""
     root = logging.getLogger()
     root.setLevel(loggingLevel)
- 
+
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(loggingLevel)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -244,7 +244,7 @@ def logToStdOut():
 
 def getCourseLogger(courseID, courseName):
     """Set up course specific logger.
-    
+
     :param courseID: ID number of the course
     :type courseID: str or int
     :param courseName: Name of the course
@@ -253,7 +253,7 @@ def getCourseLogger(courseID, courseName):
     :rtype: logging.FileHandler
     """
     global courseLoggers  # type: dict
- 
+
     courseID = str(courseID)
 
     if courseID in courseLoggers:
@@ -279,7 +279,7 @@ def getCourseLogger(courseID, courseName):
 
 def getCourseLogHandler(courseID, courseName):
     """Lookup the course specific logger for this course.
-    
+
     :param courseID: ID number of the course
     :type courseID: str or int
     :param courseName: Name of the course
@@ -413,11 +413,11 @@ def emailLogForCourseID(courseID, recipients):
 
 def emailCourseLogs(courseInstructors):
     """ Loop through instructors to email course information to them.
-    
+
     :param courseInstructors: Dictionary of courses to list of their instructors
     :type courseInstructors: dict
     """
-    
+
     logger.info('Preparing to send email to instructors...')
 
     for courseID, instructors in list(courseInstructors.items()):
@@ -427,14 +427,14 @@ def emailCourseLogs(courseInstructors):
 
 def main():
     """Setup and run Canvas / ArcGIS group sync.
-    
+
     * parse command line arguments.
     * setup loggers.
     * connect to Canvas and  ArcGIS instances.
     * get list of relevant assignments from Canvas courses listed hand-edited Canvas page.
     * update membership of ArcGIS groups corresponding to Canvas course / assignments.
     """
-    
+
     global logger
     global logFormatter
     global options
@@ -447,7 +447,7 @@ def main():
     logger = logging.getLogger(config.Application.Logging.MAIN_LOGGER_NAME)  # type: logging.Logger
     logger.setLevel(loggingLevel)
     logger.addHandler(logHandler)
-    
+
     # Add logging to stdout for OpenShift.
     logToStdOut()
 
@@ -546,7 +546,7 @@ def main():
         emailCourseLogs(courseInstructorDictionary)
 
     renameLogForCourseID(None)
-    
+
     logger.info("Finished current kartograafr run.")
 
 
