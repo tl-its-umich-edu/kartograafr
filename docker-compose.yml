@@ -1,9 +1,0 @@
-services:
-  job:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - ${HOME}/secrets/kartograafr:/kartograafr/configuration/secrets
-      - .:/kartograafr
-    container_name: kartograafr
