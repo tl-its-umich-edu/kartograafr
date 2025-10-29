@@ -3,7 +3,8 @@ FROM python:3.13-slim
 COPY requirements.txt /requirements.txt
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ArcGIS must be installed separately because some of its dependencies cause
 # conflicts, but we don't need those dependencies.  We cannot use the
