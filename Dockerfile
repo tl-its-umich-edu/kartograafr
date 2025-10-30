@@ -6,11 +6,6 @@ RUN apt-get update && \
     pip install -r requirements.txt && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ArcGIS must be installed separately because some of its dependencies cause
-# conflicts, but we don't need those dependencies.  We cannot use the
-# `--no-deps` flag in `requirements.txt`, so we install ArcGIS separately.
-RUN pip install arcgis==1.9.0 --no-deps
-
 WORKDIR /kartograafr/
 COPY . /kartograafr/
 
@@ -19,5 +14,3 @@ ENV TZ=America/New_York
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 CMD ["/bin/bash", "start.sh"]
-
-# Done!
