@@ -1,18 +1,23 @@
 # standard modules
-import argparse, logging, os, re, smtplib, sys, traceback
+import argparse
+import logging
+import os
+import re
+import smtplib
+import sys
+import traceback
 from datetime import datetime
 from email.message import EmailMessage
 
-# third-party modules
+import dateutil.parser
+import dateutil.tz
 from bs4 import BeautifulSoup
 from bs4.builder._htmlparser import HTMLParserTreeBuilder
-import dateutil.parser, dateutil.tz
 
-# local modules
 import arcgisUM
+import util
 from CanvasAPI import CanvasAPI
 from configuration import config
-import util
 
 
 # global variables and logging setup
