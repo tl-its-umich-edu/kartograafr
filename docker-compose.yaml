@@ -1,0 +1,12 @@
+services:
+  job:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # Look for secrets in `secrets/kartograafr` within one of the following:
+      # 1. The directory specified by the CONFIG_DIR environment variable
+      # 2. The user's home directory
+      - ${CONFIG_DIR:-${HOME}}/secrets/kartograafr:/kartograafr/configuration/secrets
+      - .:/kartograafr
+    container_name: kartograafr

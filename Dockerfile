@@ -1,12 +1,10 @@
-# Use a Python base image
-FROM python:3.8-slim
+FROM python:3.13-slim
 
 COPY requirements.txt /requirements.txt
-RUN pip install -r requirements.txt
-
-# arcgis needs to be installed separately because of issues when including the requirement with a flag in
-# requirements.txt
-RUN pip install arcgis==1.9.0 --no-deps
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    pip install -r requirements.txt && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /kartograafr/
 COPY . /kartograafr/
@@ -16,5 +14,3 @@ ENV TZ=America/New_York
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 CMD ["/bin/bash", "start.sh"]
-
-# Done!

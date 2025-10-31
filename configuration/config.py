@@ -1,10 +1,13 @@
 import json, os
 
+ENV = {}
+
+env_file_path = os.getenv("ENV_FILE", "configuration/secrets/env.json")
 try:
-    with open(os.getenv("ENV_FILE", "configuration/secrets/env.json")) as env_file:
+    with open(env_file_path) as env_file:
         ENV = json.load(env_file)
 except FileNotFoundError as fnfe:
-    print("Default config file was not found. This is normal for the build; it should be provided for operation.")
+    raise RuntimeError(f'Config file "{env_file_path}" was not found.')
 
 
 class Application(object):

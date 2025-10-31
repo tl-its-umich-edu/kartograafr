@@ -1,16 +1,17 @@
 # Wrapper around calls to arcgis. Helps with testing and future changes.
 
-# standard modules
-import datetime, logging, json, traceback
-from operator import itemgetter
+import datetime
+import json
+import logging
+import traceback
 from io import StringIO
+from operator import itemgetter
 
-# third-party modules
-import arcgis, dateutil.tz
+import arcgis
+import dateutil.tz
 
-# local modules
-from configuration import config
 import util
+from configuration import config
 
 
 # global variables and logging setup
